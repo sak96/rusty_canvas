@@ -1,9 +1,10 @@
 use yew::prelude::*;
+mod canvas;
 
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <h1 ~innerText="Hello World" />
+        <canvas::DrawingCanvas />
     }
 }
 
