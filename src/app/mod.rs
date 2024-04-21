@@ -10,7 +10,7 @@ pub fn app() -> Html {
         Callback::from(move |new_tool| tool.set(new_tool))
     };
     html! {
-        <div>
+        <div style="min-height: 100vh; display: flex;">
             <toolbar::Toolbar {ontoolchange} />
             <canvas::DrawingCanvas />
         </div>

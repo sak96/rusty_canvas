@@ -29,11 +29,10 @@ pub struct ToolbarProps {
 pub fn toolbar(ToolbarProps { ontoolchange }: &ToolbarProps) -> Html {
     html! {
         <div style=r#"
-            margin: auto 0;
-            position: relative;
+            position: absolute;
+            left: 50%;
+            margin-left: -20px;
             top: 0;
-            text-align: center;
-            border: black;
         "#>
         {
             TOOLS.iter().map(|tool| {
