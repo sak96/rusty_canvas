@@ -70,6 +70,8 @@ pub fn drawing_canvas() -> Html {
         })
     };
     html!(
+        <>
         <canvas style="display: block;width: 100%; height: 100%" onclick={onclick} ref={canvas_ref} />
+        </>
     )
 }

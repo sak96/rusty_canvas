@@ -1,13 +1,5 @@
-use yew::prelude::*;
-mod canvas;
-
-#[function_component(App)]
-fn app() -> Html {
-    html! {
-        <canvas::DrawingCanvas />
-    }
-}
+mod app;
 
 fn main() {
-    yew::Renderer::<App>::new().render();
+    yew::Renderer::<app::App>::new().render();
 }
