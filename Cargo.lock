@@ -94,15 +94,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "draw_notes"
-version = "0.1.0"
-dependencies = [
- "wasm-bindgen",
- "web-sys",
- "yew",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -825,6 +816,15 @@ name = "rustversion"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80af6f9131f277a45a3fba6ce8e2258037bb0477a67e610d3c1fe046ab31de47"
+
+[[package]]
+name = "rusty_canvas"
+version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+ "yew",
+]
 
 [[package]]
 name = "ryu"
