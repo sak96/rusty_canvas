@@ -9,3 +9,9 @@ edition = "2021"
 yew = { version = "0.21.0", features = ["csr"] }
 web-sys = { version = "0.3.69", features = ["HtmlCanvasElement", "CanvasRenderingContext2d", "DomRect"] }
 wasm-bindgen = "0.2.92"
+
+[profile.release]
+panic = 'abort' # less code to include into binary
+codegen-units = 1 # optimization over all codebase (slow)
+opt-level = 'z' # optimization for size ( more aggressive )
+lto = true # link time optimization using using whole-program analysis
