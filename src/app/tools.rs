@@ -30,6 +30,14 @@ pub trait Tool {
         shapes: &mut Vec<Box<dyn Draw>>,
     ) {
     }
+    fn onmouseleave(
+        &mut self,
+        position: (f64, f64),
+        canvas: HtmlCanvasElement,
+        shapes: &mut Vec<Box<dyn Draw>>,
+    ) {
+        self.onmouseup(position, canvas, shapes)
+    }
 }
 
 #[derive(Default)]
