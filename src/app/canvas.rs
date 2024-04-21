@@ -2,57 +2,7 @@ use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
 
-use shapes::Draw;
-
-mod shapes {
-    use wasm_bindgen::JsValue;
-    use web_sys::CanvasRenderingContext2d;
-    pub struct BBox {
-        pub left: f64,
-        pub top: f64,
-        pub width: f64,
-        pub height: f64,
-    }
-
-    pub trait Draw {
-        fn bbox(&self) -> BBox;
-        fn draw(&self, interface: &CanvasRenderingContext2d);
-    }
-
-    pub struct Rectangle {
-        left: f64,
-        top: f64,
-        width: f64,
-        height: f64,
-    }
-
-    impl Rectangle {
-        pub fn new(left: f64, top: f64, width: f64, height: f64) -> Self {
-            Self {
-                left,
-                top,
-                width,
-                height,
-            }
-        }
-    }
-
-    impl Draw for Rectangle {
-        fn bbox(&self) -> BBox {
-            BBox {
-                left: self.left,
-                top: self.top,
-                width: self.width,
-                height: self.height,
-            }
-        }
-
-        fn draw(&self, interface: &CanvasRenderingContext2d) {
-            interface.set_stroke_style(&JsValue::from_str("green"));
-            interface.stroke_rect(self.left, self.top, self.width, self.height);
-        }
-    }
-}
+use super::shapes::{Draw, Rectangle};
 
 fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Box<dyn Draw>]) {
     web_sys::console::log_1(&format! {"rendering {}",shapes.len() }.into());
@@ -92,7 +42,7 @@ pub fn drawing_canvas() -> Html {
             new_shape_start.borrow_mut().replace((left, top));
             shapes
                 .borrow_mut()
-                .push(Box::new(shapes::Rectangle::new(left, top, 1.0, 1.0)));
+                .push(Box::new(Rectangle::new(left, top, 1.0, 1.0)));
             refresh_canvas(canvas, &shapes.borrow());
         })
     };
@@ -107,7 +57,7 @@ pub fn drawing_canvas() -> Html {
                 if let Some((x1, y1)) = *new_shape_start.borrow() {
                     let mut shapes = shapes.borrow_mut();
                     shapes.pop();
-                    shapes.push(Box::new(shapes::Rectangle::new(
+                    shapes.push(Box::new(Rectangle::new(
                         x.min(x1),
                         y.min(y1),
                         (x - x1).abs(),
@@ -129,7 +79,7 @@ pub fn drawing_canvas() -> Html {
                 let mut shapes = shapes.borrow_mut();
                 shapes.pop();
                 let (x1, y1) = new_shape_start.borrow_mut().take().unwrap_or((0.0, 0.0));
-                shapes.push(Box::new(shapes::Rectangle::new(
+                shapes.push(Box::new(Rectangle::new(
                     x.min(x1),
                     y.min(y1),
                     (x - x1).abs(),
