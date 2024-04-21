@@ -7,9 +7,21 @@ pub struct BBox {
     pub height: f64,
 }
 
+impl BBox {
+    pub fn from_corner((x1, y1): (f64, f64), (x, y): (f64, f64)) -> Self {
+        Self {
+            left: x.min(x1),
+            top: y.min(y1),
+            width: (x - x1).abs(),
+            height: (y - y1).abs(),
+        }
+    }
+}
+
 pub trait Draw {
     fn bbox(&self) -> BBox;
     fn draw(&self, interface: &CanvasRenderingContext2d);
+    fn resize_to_bbox(&mut self, bbox: BBox);
 }
 
 pub struct Rectangle {
@@ -43,5 +55,12 @@ impl Draw for Rectangle {
     fn draw(&self, interface: &CanvasRenderingContext2d) {
         interface.set_stroke_style(&JsValue::from_str("green"));
         interface.stroke_rect(self.left, self.top, self.width, self.height);
+    }
+
+    fn resize_to_bbox(&mut self, bbox: BBox) {
+        self.left = bbox.left;
+        self.top = bbox.top;
+        self.width = bbox.width;
+        self.height = bbox.height;
     }
 }

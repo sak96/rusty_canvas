@@ -2,10 +2,9 @@ use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
 
-use super::shapes::{Draw, Rectangle};
+use super::shapes::{BBox, Draw, Rectangle};
 
 fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Box<dyn Draw>]) {
-    web_sys::console::log_1(&format! {"rendering {}",shapes.len() }.into());
     canvas.set_width(canvas.client_width().abs_diff(0));
     canvas.set_height(canvas.client_height().abs_diff(0));
     let interface: CanvasRenderingContext2d = canvas
@@ -42,7 +41,7 @@ pub fn drawing_canvas() -> Html {
             new_shape_start.borrow_mut().replace((left, top));
             shapes
                 .borrow_mut()
-                .push(Box::new(Rectangle::new(left, top, 1.0, 1.0)));
+                .push(Box::new(Rectangle::new(left, top, 0.0, 0.0)));
             refresh_canvas(canvas, &shapes.borrow());
         })
     };
@@ -51,18 +50,12 @@ pub fn drawing_canvas() -> Html {
         let shapes = shapes.clone();
         let new_shape_start = new_shape_start.clone();
         Callback::from(move |event: MouseEvent| {
-            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            let (x, y) = get_event_canvas_postion(canvas.clone(), event);
-            {
-                if let Some((x1, y1)) = *new_shape_start.borrow() {
-                    let mut shapes = shapes.borrow_mut();
-                    shapes.pop();
-                    shapes.push(Box::new(Rectangle::new(
-                        x.min(x1),
-                        y.min(y1),
-                        (x - x1).abs(),
-                        (y - y1).abs(),
-                    )));
+            if let Some(start) = *new_shape_start.borrow() {
+                let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+                let end = get_event_canvas_postion(canvas.clone(), event);
+                let mut shapes = shapes.borrow_mut();
+                if let Some(shape) = shapes.last_mut() {
+                    shape.resize_to_bbox(BBox::from_corner(start, end));
                     refresh_canvas(canvas, &shapes);
                 }
             }
@@ -73,20 +66,15 @@ pub fn drawing_canvas() -> Html {
         let shapes = shapes.clone();
         let new_shape_start = new_shape_start.clone();
         Callback::from(move |event: MouseEvent| {
-            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            let (x, y) = get_event_canvas_postion(canvas.clone(), event);
-            {
+            if let Some(start) = new_shape_start.borrow_mut().take() {
+                let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+                let end = get_event_canvas_postion(canvas.clone(), event);
                 let mut shapes = shapes.borrow_mut();
-                shapes.pop();
-                let (x1, y1) = new_shape_start.borrow_mut().take().unwrap_or((0.0, 0.0));
-                shapes.push(Box::new(Rectangle::new(
-                    x.min(x1),
-                    y.min(y1),
-                    (x - x1).abs(),
-                    (y - y1).abs(),
-                )));
+                if let Some(shape) = shapes.last_mut() {
+                    shape.resize_to_bbox(BBox::from_corner(start, end));
+                    refresh_canvas(canvas, &shapes);
+                }
             }
-            refresh_canvas(canvas, &shapes.borrow());
         })
     };
     {
