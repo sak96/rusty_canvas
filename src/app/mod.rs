@@ -35,7 +35,8 @@ macro_rules! handle_canvas_by_tool {
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let tools: Vec<Box<dyn tools::Tool>> = vec![Box::<tools::RectangleTool>::default()];
+    let tools: Vec<Box<dyn tools::Tool>> =
+        vec![Box::<tools::rectangle_tool::RectangleTool>::default()];
     let tools = use_mut_ref(|| tools);
     let canvas_ref = use_node_ref();
     let shapes = use_mut_ref(Vec::<Box<dyn Draw>>::new);
