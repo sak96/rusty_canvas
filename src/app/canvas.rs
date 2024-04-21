@@ -77,6 +77,14 @@ pub fn drawing_canvas() -> Html {
             }
         })
     };
+    let onresize = {
+        let canvas_ref = canvas_ref.clone();
+        let shapes = shapes.clone();
+        Callback::from(move |_| {
+            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+            refresh_canvas(canvas, &shapes.borrow());
+        })
+    };
     {
         let canvas_ref = canvas_ref.clone();
         let shapes = shapes.clone();
@@ -93,6 +101,7 @@ pub fn drawing_canvas() -> Html {
             {onmouseup}
             {onmousemove}
             {onmousedown}
+            {onresize}
             />
     )
 }
