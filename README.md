@@ -11,3 +11,11 @@ Drawing canvas app written in Rust.
 - [ ] select group
 - [ ] resize selection
 - [ ] pan
+
+
+# Future Road Map Choice
+
+- [ ] draw ellipse
+- [ ] zoom
+- [ ] export/import
+- [ ] undo/redo
