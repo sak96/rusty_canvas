@@ -1,4 +1,5 @@
 mod canvas;
+mod shapes;
 mod toolbar;
 use yew::prelude::*;
 
