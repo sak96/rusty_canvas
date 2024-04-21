@@ -44,6 +44,8 @@ pub fn app() -> Html {
     handle_canvas_by_tool! {onmousedown, canvas_ref, shapes, tools, cur_tool};
     handle_canvas_by_tool! {onmouseup, canvas_ref, shapes, tools, cur_tool};
     handle_canvas_by_tool! {onmousemove, canvas_ref, shapes, tools, cur_tool};
+    handle_canvas_by_tool! {onmouseleave, canvas_ref, shapes, tools, cur_tool};
+
     let onresize = {
         move_to_current_scope!(canvas_ref, shapes);
         Callback::from(move |_| {
@@ -79,6 +81,7 @@ pub fn app() -> Html {
                 {onmouseup}
                 {onmousemove}
                 {onmousedown}
+                {onmouseleave}
                 {onresize}
                 />
         </div>
