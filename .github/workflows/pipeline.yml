@@ -50,7 +50,7 @@ jobs:
       - name: Install Trunk
         run: cargo install trunk
       - name: Build with Trunk
-        run: trunk build --release --public-url=${{ github.event.repository.name }}
+        run: trunk build --release --public-url=/${{ github.event.repository.name }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
