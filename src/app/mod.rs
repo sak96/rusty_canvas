@@ -28,8 +28,8 @@ macro_rules! handle_canvas_by_tool {
                 let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
                 let position = get_event_canvas_postion(canvas.clone(), event);
                 if tool.$onevent(position, canvas.clone(), &mut shapes.borrow_mut()) {
-                    let interface = canvas::refresh_canvas(canvas, &shapes.borrow());
-                    tool.draw_extra_shapes(&interface);
+                    let context = canvas::refresh_canvas(canvas, &shapes.borrow());
+                    tool.draw_extra_shapes(&context);
                 }
             })
         };

@@ -39,5 +39,5 @@ pub trait Tool {
     ) -> bool {
         self.onmouseup(position, canvas, shapes)
     }
-    fn draw_extra_shapes(&self, interface: &CanvasRenderingContext2d) {}
+    fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {}
 }

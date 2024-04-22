@@ -9,17 +9,17 @@ pub fn refresh_canvas(
 ) -> CanvasRenderingContext2d {
     canvas.set_width(canvas.client_width().abs_diff(0));
     canvas.set_height(canvas.client_height().abs_diff(0));
-    let interface: CanvasRenderingContext2d = canvas
+    let context: CanvasRenderingContext2d = canvas
         .get_context("2d")
         .unwrap()
         .unwrap()
         .dyn_into()
         .unwrap();
-    interface.clear_rect(0.0, 0.0, canvas.width() as f64, canvas.height() as f64);
+    context.clear_rect(0.0, 0.0, canvas.width() as f64, canvas.height() as f64);
     for shape in shapes {
-        shape.draw(&interface);
+        shape.draw(&context);
     }
-    interface
+    context
 }
 
 pub fn get_event_canvas_postion(canvas: HtmlCanvasElement, event: MouseEvent) -> (f64, f64) {
