@@ -22,7 +22,7 @@ impl BBox {
 
 pub trait Draw {
     fn bbox(&self) -> BBox;
-    fn draw(&self, interface: &CanvasRenderingContext2d);
+    fn draw(&self, context: &CanvasRenderingContext2d);
     fn resize_to_bbox(&mut self, bbox: BBox) -> bool;
 }
 
@@ -44,9 +44,9 @@ impl Draw for Rectangle {
         }
     }
 
-    fn draw(&self, interface: &CanvasRenderingContext2d) {
-        interface.set_stroke_style(&JsValue::from_str("green"));
-        interface.stroke_rect(self.left, self.top, self.width, self.height);
+    fn draw(&self, context: &CanvasRenderingContext2d) {
+        context.set_stroke_style(&JsValue::from_str("green"));
+        context.stroke_rect(self.left, self.top, self.width, self.height);
     }
 
     fn resize_to_bbox(&mut self, bbox: BBox) -> bool {

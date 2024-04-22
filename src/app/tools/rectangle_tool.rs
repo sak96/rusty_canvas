@@ -60,7 +60,7 @@ impl Tool for RectangleTool {
         }
     }
 
-    fn draw_extra_shapes(&self, interface: &CanvasRenderingContext2d) {
-        self.shape.draw(interface);
+    fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {
+        self.shape.draw(context);
     }
 }
