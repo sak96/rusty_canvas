@@ -1,15 +1,14 @@
-use web_sys::HtmlCanvasElement;
-use crate::app::{
-    canvas::refresh_canvas,
-    shapes::{BBox, Draw, Rectangle},
-};
 use super::Tool;
+use crate::app::shapes::{BBox, Draw, Rectangle};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 #[derive(Default)]
 pub struct RectangleTool {
-    start: Option<(f64, f64)>,
+    bbox: Option<(f64, f64)>,
+    shape: Box<Rectangle>,
 }
 
+#[allow(unused_variables)]
 impl Tool for RectangleTool {
     fn button_icon(&self) -> &'static str {
         "\u{2B1B}"
@@ -24,10 +23,11 @@ impl Tool for RectangleTool {
         position: (f64, f64),
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
-    ) {
-        self.start.replace(position);
-        shapes.push(Box::new(Rectangle::new(position.0, position.1, 0.0, 0.0)));
-        refresh_canvas(canvas, shapes);
+    ) -> bool {
+        self.bbox.replace(position);
+        self.shape
+            .resize_to_bbox(BBox::from_corner(position, position));
+        true
     }
 
     fn onmouseup(
@@ -35,12 +35,15 @@ impl Tool for RectangleTool {
         position: (f64, f64),
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
-    ) {
-        if let (Some(shape), Some(start)) = (shapes.last_mut(), self.start) {
-            shape.resize_to_bbox(BBox::from_corner(start, position));
-            refresh_canvas(canvas, shapes);
+    ) -> bool {
+        if let Some(start) = self.bbox.take() {
+            let mut shape = Box::<Rectangle>::default();
+            let changed = shape.resize_to_bbox(BBox::from_corner(start, position));
+            shapes.push(shape);
+            changed
+        } else {
+            false
         }
-        self.start = None
     }
 
     fn onmousemove(
@@ -48,12 +51,16 @@ impl Tool for RectangleTool {
         position: (f64, f64),
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
-    ) {
-        if let (Some(shape), Some(start)) = (shapes.last_mut(), self.start) {
-            shape.resize_to_bbox(BBox::from_corner(start, position));
-            refresh_canvas(canvas, shapes);
+    ) -> bool {
+        if let Some(start) = self.bbox {
+            self.shape
+                .resize_to_bbox(BBox::from_corner(start, position))
         } else {
-            self.start = None
+            false
         }
+    }
+
+    fn draw_extra_shapes(&self, interface: &CanvasRenderingContext2d) {
+        self.shape.draw(interface);
     }
 }

@@ -3,7 +3,10 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 
 use super::shapes::Draw;
 
-pub fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Box<dyn Draw>]) {
+pub fn refresh_canvas(
+    canvas: HtmlCanvasElement,
+    shapes: &[Box<dyn Draw>],
+) -> CanvasRenderingContext2d {
     canvas.set_width(canvas.client_width().abs_diff(0));
     canvas.set_height(canvas.client_height().abs_diff(0));
     let interface: CanvasRenderingContext2d = canvas
@@ -16,6 +19,7 @@ pub fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Box<dyn Draw>]) {
     for shape in shapes {
         shape.draw(&interface);
     }
+    interface
 }
 
 pub fn get_event_canvas_postion(canvas: HtmlCanvasElement, event: MouseEvent) -> (f64, f64) {

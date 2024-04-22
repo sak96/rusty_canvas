@@ -27,7 +27,10 @@ macro_rules! handle_canvas_by_tool {
                 let tool = &mut tools[*cur_tool];
                 let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
                 let position = get_event_canvas_postion(canvas.clone(), event);
-                tool.$onevent(position, canvas, &mut shapes.borrow_mut())
+                if tool.$onevent(position, canvas.clone(), &mut shapes.borrow_mut()) {
+                    let interface = canvas::refresh_canvas(canvas, &shapes.borrow());
+                    tool.draw_extra_shapes(&interface);
+                }
             })
         };
     };
