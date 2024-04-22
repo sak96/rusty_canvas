@@ -4,7 +4,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 #[derive(Default)]
 pub struct RectangleTool {
-    bbox: Option<(f64, f64)>,
+    start: Option<(f64, f64)>,
     shape: Box<Rectangle>,
 }
 
@@ -24,7 +24,7 @@ impl Tool for RectangleTool {
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
     ) -> bool {
-        self.bbox.replace(position);
+        self.start.replace(position);
         self.shape
             .resize_to_bbox(BBox::from_corner(position, position));
         true
@@ -36,7 +36,7 @@ impl Tool for RectangleTool {
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
     ) -> bool {
-        if let Some(start) = self.bbox.take() {
+        if let Some(start) = self.start.take() {
             let mut shape = Box::<Rectangle>::default();
             let changed = shape.resize_to_bbox(BBox::from_corner(start, position));
             shapes.push(shape);
@@ -52,7 +52,7 @@ impl Tool for RectangleTool {
         canvas: HtmlCanvasElement,
         shapes: &mut Vec<Box<dyn Draw>>,
     ) -> bool {
-        if let Some(start) = self.bbox {
+        if let Some(start) = self.start {
             self.shape
                 .resize_to_bbox(BBox::from_corner(start, position))
         } else {

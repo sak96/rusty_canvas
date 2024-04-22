@@ -56,6 +56,13 @@ pub fn app() -> Html {
             canvas::refresh_canvas(canvas, &shapes.borrow(), None);
         })
     };
+    {
+        move_to_current_scope!(canvas_ref, shapes);
+        use_effect(move ||  {
+            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+            canvas::refresh_canvas(canvas, &shapes.borrow(), None);
+        })
+    }
 
     html! {
         <div style="min-height: 100vh; display: flex;">
