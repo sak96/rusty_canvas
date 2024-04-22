@@ -1,5 +1,7 @@
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+
+#[derive(PartialEq)]
 pub struct BBox {
     pub left: f64,
     pub top: f64,
@@ -21,25 +23,15 @@ impl BBox {
 pub trait Draw {
     fn bbox(&self) -> BBox;
     fn draw(&self, interface: &CanvasRenderingContext2d);
-    fn resize_to_bbox(&mut self, bbox: BBox);
+    fn resize_to_bbox(&mut self, bbox: BBox) -> bool;
 }
 
+#[derive(Default)]
 pub struct Rectangle {
     left: f64,
     top: f64,
     width: f64,
     height: f64,
-}
-
-impl Rectangle {
-    pub fn new(left: f64, top: f64, width: f64, height: f64) -> Self {
-        Self {
-            left,
-            top,
-            width,
-            height,
-        }
-    }
 }
 
 impl Draw for Rectangle {
@@ -57,10 +49,15 @@ impl Draw for Rectangle {
         interface.stroke_rect(self.left, self.top, self.width, self.height);
     }
 
-    fn resize_to_bbox(&mut self, bbox: BBox) {
-        self.left = bbox.left;
-        self.top = bbox.top;
-        self.width = bbox.width;
-        self.height = bbox.height;
+    fn resize_to_bbox(&mut self, bbox: BBox) -> bool {
+        if self.bbox() != bbox {
+            self.left = bbox.left;
+            self.top = bbox.top;
+            self.width = bbox.width;
+            self.height = bbox.height;
+            true
+        } else {
+            false
+        }
     }
 }
