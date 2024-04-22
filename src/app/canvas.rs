@@ -1,12 +1,13 @@
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 
-use super::shapes::Draw;
+use super::{shapes::Draw, tools::Tool};
 
 pub fn refresh_canvas(
     canvas: HtmlCanvasElement,
     shapes: &[Box<dyn Draw>],
-) -> CanvasRenderingContext2d {
+    tool: Option<&dyn Tool>,
+) {
     canvas.set_width(canvas.client_width().abs_diff(0));
     canvas.set_height(canvas.client_height().abs_diff(0));
     let context: CanvasRenderingContext2d = canvas
@@ -19,7 +20,9 @@ pub fn refresh_canvas(
     for shape in shapes {
         shape.draw(&context);
     }
-    context
+    if let Some(tool) = tool {
+        tool.draw_extra_shapes(&context);
+    }
 }
 
 pub fn get_event_canvas_postion(canvas: HtmlCanvasElement, event: MouseEvent) -> (f64, f64) {

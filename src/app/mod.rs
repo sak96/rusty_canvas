@@ -28,8 +28,7 @@ macro_rules! handle_canvas_by_tool {
                 let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
                 let position = get_event_canvas_postion(canvas.clone(), event);
                 if tool.$onevent(position, canvas.clone(), &mut shapes.borrow_mut()) {
-                    let context = canvas::refresh_canvas(canvas, &shapes.borrow());
-                    tool.draw_extra_shapes(&context);
+                    canvas::refresh_canvas(canvas, &shapes.borrow(), Some(tool.as_ref()));
                 }
             })
         };
@@ -54,7 +53,7 @@ pub fn app() -> Html {
         move_to_current_scope!(canvas_ref, shapes);
         Callback::from(move |_| {
             let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            canvas::refresh_canvas(canvas, &shapes.borrow());
+            canvas::refresh_canvas(canvas, &shapes.borrow(), None);
         })
     };
 
