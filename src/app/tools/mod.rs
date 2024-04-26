@@ -2,6 +2,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 use super::shapes::Draw;
 pub mod shape_tool;
+pub mod select_tool;
 
 #[allow(unused_variables)]
 pub trait Tool {
