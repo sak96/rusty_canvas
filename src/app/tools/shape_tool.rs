@@ -1,21 +1,33 @@
 use super::Tool;
-use crate::app::shapes::{BBox, Draw, Rectangle};
+use crate::app::shapes::{BBox, Draw};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
-#[derive(Default)]
-pub struct RectangleTool {
+pub struct ShapeTool<T: Draw + Default> {
     start: Option<(f64, f64)>,
-    shape: Box<Rectangle>,
+    icon: &'static str,
+    title: &'static str,
+    shape: Box<T>,
+}
+
+impl<T: Draw + Default> ShapeTool<T> {
+    pub fn new(icon: &'static str, title: &'static str) -> Self {
+        Self {
+            icon,
+            title,
+            shape: Default::default(),
+            start: None,
+        }
+    }
 }
 
 #[allow(unused_variables)]
-impl Tool for RectangleTool {
+impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
     fn button_icon(&self) -> &'static str {
-        "\u{2B1B}"
+        self.icon
     }
 
     fn button_title(&self) -> &'static str {
-        "Rectangle drawing tool."
+        self.title
     }
 
     fn onmousedown(
@@ -37,7 +49,7 @@ impl Tool for RectangleTool {
         shapes: &mut Vec<Box<dyn Draw>>,
     ) -> bool {
         if let Some(start) = self.start.take() {
-            let mut shape = Box::<Rectangle>::default();
+            let mut shape = Box::<T>::default();
             let changed = shape.resize_to_bbox(BBox::from_corner(start, position));
             shapes.push(shape);
             changed

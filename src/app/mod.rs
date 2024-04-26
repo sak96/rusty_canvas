@@ -37,8 +37,16 @@ macro_rules! handle_canvas_by_tool {
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let tools: Vec<Box<dyn tools::Tool>> =
-        vec![Box::<tools::rectangle_tool::RectangleTool>::default()];
+    let tools: Vec<Box<dyn tools::Tool>> = vec![
+        Box::new(tools::shape_tool::ShapeTool::<shapes::Rectangle>::new(
+            "\u{2B1B}",
+            "Rectangle drawing tool.",
+        )),
+        Box::new(tools::shape_tool::ShapeTool::<shapes::Ellipse>::new(
+            "\u{26AB}",
+            "Ellipse drawing tool.",
+        )),
+    ];
     let tools = use_mut_ref(|| tools);
     let canvas_ref = use_node_ref();
     let shapes = use_mut_ref(Vec::<Box<dyn Draw>>::new);
@@ -58,7 +66,7 @@ pub fn app() -> Html {
     };
     {
         move_to_current_scope!(canvas_ref, shapes);
-        use_effect(move ||  {
+        use_effect(move || {
             let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
             canvas::refresh_canvas(canvas, &shapes.borrow(), None);
         })
