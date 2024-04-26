@@ -1,7 +1,7 @@
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 use super::shapes::Draw;
-pub mod rectangle_tool;
+pub mod shape_tool;
 
 #[allow(unused_variables)]
 pub trait Tool {

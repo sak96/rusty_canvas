@@ -7,6 +7,7 @@ Drawing canvas app written in Rust.
 # Road Map
 
 - [x] draw rectangle
+- [x] draw ellipse
 - [ ] select individual
 - [ ] select group
 - [ ] resize selection
@@ -15,7 +16,6 @@ Drawing canvas app written in Rust.
 
 # Future Road Map Choice
 
-- [ ] draw ellipse
 - [ ] zoom
 - [ ] export/import
 - [ ] undo/redo
