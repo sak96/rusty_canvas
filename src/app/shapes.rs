@@ -1,7 +1,7 @@
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct BBox {
     pub left: f64,
     pub top: f64,
@@ -18,12 +18,53 @@ impl BBox {
             height: (y - y1).abs(),
         }
     }
+
+    fn right(&self) -> f64 {
+        self.left + self.width
+    }
+
+    fn bottom(&self) -> f64 {
+        self.top + self.height
+    }
+
+    #[must_use]
+    pub fn in_(&self, bbox: &BBox) -> bool {
+        self.left >= bbox.left
+            && self.top >= bbox.top
+            && self.right() <= bbox.right()
+            && self.bottom() <= bbox.bottom()
+    }
+
+    pub fn add_padding(&mut self, padding: f64) {
+        self.left -= padding;
+        self.top -= padding;
+        self.width += padding + padding;
+        self.height += padding + padding;
+    }
+
+    pub fn add_bbox(&mut self, bbox: &BBox) {
+        let left = self.left.min(bbox.left);
+        let top = self.top.min(bbox.top);
+        self.width = self.right().max(bbox.right()) - left;
+        self.height = self.bottom().max(bbox.bottom()) - top;
+        self.left = left;
+        self.top = top;
+    }
 }
 
 pub trait Draw {
     fn bbox(&self) -> BBox;
     fn draw(&self, context: &CanvasRenderingContext2d);
-    fn resize_to_bbox(&mut self, bbox: BBox) -> bool;
+    fn _resize_to_bbox(&mut self, bbox: &BBox);
+
+    fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
+        if &self.bbox() != bbox {
+            self._resize_to_bbox(bbox);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Default)]
@@ -32,6 +73,7 @@ pub struct Rectangle {
     top: f64,
     width: f64,
     height: f64,
+    pub is_selection: bool,
 }
 
 impl Draw for Rectangle {
@@ -45,20 +87,19 @@ impl Draw for Rectangle {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style(&JsValue::from_str("green"));
+        if self.is_selection {
+            context.set_stroke_style(&JsValue::from_str("blue"));
+        } else {
+            context.set_stroke_style(&JsValue::from_str("green"));
+        }
         context.stroke_rect(self.left, self.top, self.width, self.height);
     }
 
-    fn resize_to_bbox(&mut self, bbox: BBox) -> bool {
-        if self.bbox() != bbox {
-            self.left = bbox.left;
-            self.top = bbox.top;
-            self.width = bbox.width;
-            self.height = bbox.height;
-            true
-        } else {
-            false
-        }
+    fn _resize_to_bbox(&mut self, bbox: &BBox) {
+        self.left = bbox.left;
+        self.top = bbox.top;
+        self.width = bbox.width;
+        self.height = bbox.height;
     }
 }
 
@@ -97,15 +138,10 @@ impl Draw for Ellipse {
         context.stroke();
     }
 
-    fn resize_to_bbox(&mut self, bbox: BBox) -> bool {
-        if self.bbox() != bbox {
-            self.radius_x = bbox.width / 2.0;
-            self.radius_y = bbox.height / 2.0;
-            self.center_x = bbox.left + self.radius_x;
-            self.center_y = bbox.top + self.radius_y;
-            true
-        } else {
-            false
-        }
+    fn _resize_to_bbox(&mut self, bbox: &BBox) {
+        self.radius_x = bbox.width / 2.0;
+        self.radius_y = bbox.height / 2.0;
+        self.center_x = bbox.left + self.radius_x;
+        self.center_y = bbox.top + self.radius_y;
     }
 }
