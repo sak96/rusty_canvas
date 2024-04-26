@@ -38,6 +38,7 @@ macro_rules! handle_canvas_by_tool {
 #[function_component(App)]
 pub fn app() -> Html {
     let tools: Vec<Box<dyn tools::Tool>> = vec![
+        Box::<tools::select_tool::SelectTool>::default(),
         Box::new(tools::shape_tool::ShapeTool::<shapes::Rectangle>::new(
             "ti-square",
             "Rectangle drawing tool.",
@@ -81,9 +82,12 @@ pub fn app() -> Html {
                 top: 0;
             "#>
             {
-                tools.borrow().iter().enumerate().map(|(i,tool)|{html!{
+                tools.borrow().iter().enumerate().map(|(i,tool)|{
+                    let color = if i == *cur_tool {"border: 2px solid blue ;"} else {""};
+                    html!{
                     <button
                         class={classes!("ti", tool.button_icon())}
+                        style={color}
                         ~title={tool.button_title()}
                         ~onclick={
                             let cur_tool = cur_tool.clone();
