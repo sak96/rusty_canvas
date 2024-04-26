@@ -38,7 +38,7 @@ impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
     ) -> bool {
         self.start.replace(position);
         self.shape
-            .resize_to_bbox(BBox::from_corner(position, position));
+            .resize_to_bbox(&BBox::from_corner(position, position));
         true
     }
 
@@ -50,7 +50,7 @@ impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
     ) -> bool {
         if let Some(start) = self.start.take() {
             let mut shape = Box::<T>::default();
-            let changed = shape.resize_to_bbox(BBox::from_corner(start, position));
+            let changed = shape.resize_to_bbox(&BBox::from_corner(start, position));
             shapes.push(shape);
             changed
         } else {
@@ -66,13 +66,15 @@ impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
     ) -> bool {
         if let Some(start) = self.start {
             self.shape
-                .resize_to_bbox(BBox::from_corner(start, position))
+                .resize_to_bbox(&BBox::from_corner(start, position))
         } else {
             false
         }
     }
 
     fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {
-        self.shape.draw(context);
+        if self.start.is_some() {
+            self.shape.draw(context);
+        }
     }
 }
