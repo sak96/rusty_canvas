@@ -39,11 +39,11 @@ macro_rules! handle_canvas_by_tool {
 pub fn app() -> Html {
     let tools: Vec<Box<dyn tools::Tool>> = vec![
         Box::new(tools::shape_tool::ShapeTool::<shapes::Rectangle>::new(
-            "\u{2B1B}",
+            "ti-square",
             "Rectangle drawing tool.",
         )),
         Box::new(tools::shape_tool::ShapeTool::<shapes::Ellipse>::new(
-            "\u{26AB}",
+            "ti-circle",
             "Ellipse drawing tool.",
         )),
     ];
@@ -83,7 +83,7 @@ pub fn app() -> Html {
             {
                 tools.borrow().iter().enumerate().map(|(i,tool)|{html!{
                     <button
-                        ~innerText={tool.button_icon()}
+                        class={classes!("ti", tool.button_icon())}
                         ~title={tool.button_title()}
                         ~onclick={
                             let cur_tool = cur_tool.clone();
