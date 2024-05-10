@@ -1,10 +1,10 @@
 use super::ToolAction;
+use crate::app::events::Event;
 use crate::app::shapes::{BBox, Draw, Rectangle, Shape};
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::CanvasRenderingContext2d;
 
 #[derive(Default)]
 pub struct SelectTool {
-    start: Option<(f64, f64)>,
     selected_area: Rectangle,
     shapes: Vec<Rectangle>,
 }
@@ -12,7 +12,7 @@ pub struct SelectTool {
 const PADDING: f64 = 5.0;
 
 impl SelectTool {
-    fn handle_selection(&self, selection: &BBox, shapes: &mut Vec<Shape>) -> Vec<Rectangle> {
+    fn update_selection(&mut self, selection: &BBox, shapes: &mut Vec<Shape>) {
         let mut selections = vec![];
         for shape in shapes {
             let mut bbox = shape.bbox();
@@ -24,11 +24,28 @@ impl SelectTool {
                 selections.push(rect);
             }
         }
-        selections
+        self.selected_area.resize_to_bbox(selection);
+        self.shapes = selections;
+    }
+
+    fn finalize_selection(&mut self, selection: &BBox, shapes: &mut Vec<Shape>) {
+        self.update_selection(selection, shapes);
+        match self.shapes.split_first() {
+            None => {
+                self.selected_area.resize_to_bbox(&BBox::default());
+            }
+            Some((first, rest)) => {
+                let mut bbox = first.bbox();
+                for shape in rest {
+                    bbox.add_bbox(&shape.bbox())
+                }
+                bbox.add_padding(2.0 * PADDING);
+                self.selected_area.resize_to_bbox(&bbox);
+            }
+        }
     }
 }
 
-#[allow(unused_variables)]
 impl ToolAction for SelectTool {
     fn button_icon(&self) -> &'static str {
         "ti-marquee"
@@ -38,65 +55,35 @@ impl ToolAction for SelectTool {
         "Selection tool."
     }
 
-    fn onmousedown(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        self.selected_area.is_selection = true;
-        self.start.replace(position);
-        let selected_area = BBox::from_corner(position, position);
-        self.selected_area.resize_to_bbox(&selected_area);
-        true
-    }
-
-    fn onmouseup(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        if let Some(start) = self.start.take() {
-            let selection = BBox::from_corner(start, position);
-            self.shapes = self.handle_selection(&selection, shapes);
-            if let Some(first) = self.shapes.first() {
-                let mut bbox = first.bbox();
-                for shape in &self.shapes {
-                    bbox.add_bbox(&shape.bbox())
-                }
-                bbox.add_padding(2.0 * PADDING);
-                self.selected_area.resize_to_bbox(&bbox);
-            }
-            true
-        } else {
-            false
-        }
-    }
-
-    fn onmousemove(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        if let Some(start) = self.start {
-            let selection = BBox::from_corner(start, position);
-            self.selected_area.resize_to_bbox(&selection);
-            self.shapes = self.handle_selection(&selection, shapes);
-            true
-        } else {
-            false
-        }
-    }
-
     fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {
-        // if either some thing is selected or selection is happening
-        if !self.shapes.is_empty() || self.start.is_some() {
+        let bbox = self.selected_area.bbox();
+        if bbox.width != 0.0 || bbox.height != 0.0 {
             self.selected_area.draw(context);
             for shape in &self.shapes {
                 shape.draw(context);
             }
+        }
+    }
+
+    fn handle_event(&mut self, event: &Event, shapes: &mut Vec<Shape>) -> bool {
+        match event {
+            Event::PointerEventStart(_) => {
+                let changed = !self.shapes.is_empty();
+                self.selected_area.is_selection = true;
+                self.shapes.clear();
+                changed
+            }
+            Event::DragMove((start, end)) => {
+                let selection = BBox::from_corner(start, end);
+                self.update_selection(&selection, shapes);
+                true
+            }
+            Event::DragEnd((start, end)) => {
+                let selection = BBox::from_corner(start, end);
+                self.finalize_selection(&selection, shapes);
+                true
+            }
+            _ => false,
         }
     }
 }
