@@ -1,4 +1,4 @@
-use super::Tool;
+use super::ToolAction;
 use crate::app::shapes::{BBox, Draw, Rectangle, Shape};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
@@ -29,7 +29,7 @@ impl SelectTool {
 }
 
 #[allow(unused_variables)]
-impl Tool for SelectTool {
+impl ToolAction for SelectTool {
     fn button_icon(&self) -> &'static str {
         "ti-marquee"
     }

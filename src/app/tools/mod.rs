@@ -1,11 +1,22 @@
+use enum_dispatch::enum_dispatch;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 use super::shapes::Shape;
 pub mod select_tool;
 pub mod shape_tool;
 
+use select_tool::SelectTool;
+use shape_tool::ShapeTool;
+
+#[enum_dispatch(ToolAction)]
+pub enum Tool {
+    ShapeTool,
+    SelectTool,
+}
+
 #[allow(unused_variables)]
-pub trait Tool {
+#[enum_dispatch]
+pub trait ToolAction {
     fn button_icon(&self) -> &'static str;
     fn button_title(&self) -> &'static str;
     fn onmousedown(

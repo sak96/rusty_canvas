@@ -1,4 +1,4 @@
-use super::Tool;
+use super::ToolAction;
 use crate::app::shapes::{BBox, Draw, Shape};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
@@ -21,7 +21,7 @@ impl ShapeTool {
 }
 
 #[allow(unused_variables)]
-impl Tool for ShapeTool {
+impl ToolAction for ShapeTool {
     fn button_icon(&self) -> &'static str {
         self.icon
     }
