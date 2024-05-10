@@ -1,3 +1,4 @@
+use enum_dispatch::enum_dispatch;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -52,11 +53,11 @@ impl BBox {
     }
 }
 
+#[enum_dispatch]
 pub trait Draw {
     fn bbox(&self) -> BBox;
     fn draw(&self, context: &CanvasRenderingContext2d);
     fn _resize_to_bbox(&mut self, bbox: &BBox);
-
     fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
         if &self.bbox() != bbox {
             self._resize_to_bbox(bbox);
@@ -67,7 +68,7 @@ pub trait Draw {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Rectangle {
     left: f64,
     top: f64,
@@ -103,7 +104,7 @@ impl Draw for Rectangle {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Ellipse {
     center_x: f64,
     center_y: f64,
@@ -144,4 +145,11 @@ impl Draw for Ellipse {
         self.center_x = bbox.left + self.radius_x;
         self.center_y = bbox.top + self.radius_y;
     }
+}
+
+#[enum_dispatch(Draw)]
+#[derive(Clone)]
+pub enum Shape {
+    Rectangle,
+    Ellipse,
 }

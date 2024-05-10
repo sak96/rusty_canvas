@@ -39,13 +39,15 @@ macro_rules! handle_canvas_by_tool {
 pub fn app() -> Html {
     let tools: Vec<Box<dyn tools::Tool>> = vec![
         Box::<tools::select_tool::SelectTool>::default(),
-        Box::new(tools::shape_tool::ShapeTool::<shapes::Rectangle>::new(
+        Box::new(tools::shape_tool::ShapeTool::new(
             "ti-square",
             "Rectangle drawing tool.",
+            shapes::Rectangle::default().into(),
         )),
-        Box::new(tools::shape_tool::ShapeTool::<shapes::Ellipse>::new(
+        Box::new(tools::shape_tool::ShapeTool::new(
             "ti-circle",
             "Ellipse drawing tool.",
+            shapes::Ellipse::default().into(),
         )),
     ];
     let tools = use_mut_ref(|| tools);
