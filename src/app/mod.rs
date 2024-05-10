@@ -49,11 +49,13 @@ impl EventHandler {
         let position = get_event_canvas_postion(&canvas, &event);
         match event.type_().as_str() {
             "pointerdown" => {
+                canvas.set_pointer_capture(event.pointer_id()).unwrap();
                 if tool.onmousedown(position, canvas.clone(), &mut self.shapes) {
                     canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
                 }
             }
             "pointerup" => {
+                canvas.release_pointer_capture(event.pointer_id()).unwrap();
                 if tool.onmouseup(position, canvas.clone(), &mut self.shapes) {
                     canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
                 }
