@@ -21,6 +21,7 @@ pub enum Event {
 pub struct EventHandler {
     canvas_ref: NodeRef,
     tools: [Tool; 3],
+    tool_idx: usize,
     shapes: Vec<Shape>,
     event: Option<Event>,
 }
@@ -44,13 +45,24 @@ impl EventHandler {
                 )
                 .into(),
             ],
-            shapes: vec![],
-            event: None,
+            shapes: Default::default(),
+            event: Default::default(),
+            tool_idx: Default::default(),
         }
     }
 
     pub fn all_tools(&self) -> &[Tool] {
         &self.tools
+    }
+
+    pub fn tool_idx(&self) -> usize {
+        self.tool_idx
+    }
+    pub fn set_tool_idx(&mut self, mut tool_idx: usize) {
+        if tool_idx >= self.tools.len() {
+            tool_idx = 0;
+        }
+        self.tool_idx = tool_idx
     }
 
     pub fn reset_canvas(&self) {
@@ -81,10 +93,7 @@ impl EventHandler {
         (x, y)
     }
 
-    pub fn handle_ptr_event(&mut self, event: PointerEvent, mut tool_idx: usize) {
-        if tool_idx >= self.tools.len() {
-            tool_idx = 0;
-        }
+    pub fn handle_ptr_event(&mut self, event: PointerEvent) {
         let canvas = self.get_canvas();
         let position = Self::get_event_canvas_postion(&canvas, &event);
         let event = match event.type_().as_str() {
@@ -109,9 +118,9 @@ impl EventHandler {
             _ => None,
         };
         if let Some(event) = &event {
-            if self.tools[tool_idx].handle_event(event, &mut self.shapes) {
+            if self.tools[self.tool_idx].handle_event(event, &mut self.shapes) {
                 let context = self.redraw_canvas();
-                self.tools[tool_idx].draw_extra_shapes(&context);
+                self.tools[self.tool_idx].draw_extra_shapes(&context);
             }
         }
         self.event = event;
