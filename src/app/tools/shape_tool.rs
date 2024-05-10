@@ -1,27 +1,27 @@
 use super::Tool;
-use crate::app::shapes::{BBox, Draw};
+use crate::app::shapes::{BBox, Draw, Shape};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
-pub struct ShapeTool<T: Draw + Default> {
+pub struct ShapeTool {
     start: Option<(f64, f64)>,
     icon: &'static str,
     title: &'static str,
-    shape: Box<T>,
+    shape: Shape,
 }
 
-impl<T: Draw + Default> ShapeTool<T> {
-    pub fn new(icon: &'static str, title: &'static str) -> Self {
+impl ShapeTool {
+    pub fn new(icon: &'static str, title: &'static str, shape: Shape) -> Self {
         Self {
             icon,
             title,
-            shape: Default::default(),
+            shape,
             start: None,
         }
     }
 }
 
 #[allow(unused_variables)]
-impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
+impl Tool for ShapeTool {
     fn button_icon(&self) -> &'static str {
         self.icon
     }
@@ -49,9 +49,9 @@ impl<T: Draw + Default + 'static> Tool for ShapeTool<T> {
         shapes: &mut Vec<Box<dyn Draw>>,
     ) -> bool {
         if let Some(start) = self.start.take() {
-            let mut shape = Box::<T>::default();
+            let mut shape = self.shape.clone();
             let changed = shape.resize_to_bbox(&BBox::from_corner(start, position));
-            shapes.push(shape);
+            shapes.push(Box::new(shape));
             changed
         } else {
             false
