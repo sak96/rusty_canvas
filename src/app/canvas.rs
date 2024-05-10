@@ -1,12 +1,13 @@
 use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use yew::PointerEvent;
 
 use super::{
     shapes::{Draw, Shape},
-    tools::Tool,
+    tools::{Tool, ToolAction},
 };
 
-pub fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Shape], tool: Option<&dyn Tool>) {
+pub fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Shape], tool: Option<&Tool>) {
     canvas.set_width(canvas.client_width().abs_diff(0));
     canvas.set_height(canvas.client_height().abs_diff(0));
     let context: CanvasRenderingContext2d = canvas
@@ -24,7 +25,7 @@ pub fn refresh_canvas(canvas: HtmlCanvasElement, shapes: &[Shape], tool: Option<
     }
 }
 
-pub fn get_event_canvas_postion(canvas: HtmlCanvasElement, event: MouseEvent) -> (f64, f64) {
+pub fn get_event_canvas_postion(canvas: &HtmlCanvasElement, event: &PointerEvent) -> (f64, f64) {
     let rect = canvas.get_bounding_client_rect();
     let x = (event.client_x() as f64 - rect.left()) * (canvas.width() as f64 / rect.width());
     let y = (event.client_y() as f64 - rect.top()) * (canvas.height() as f64 / rect.height());

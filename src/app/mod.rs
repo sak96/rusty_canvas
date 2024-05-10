@@ -4,76 +4,95 @@ mod tools;
 use web_sys::HtmlCanvasElement;
 use yew::prelude::*;
 
-use crate::app::{canvas::get_event_canvas_postion, shapes::Shape};
+use crate::app::{canvas::get_event_canvas_postion, shapes::Shape, tools::ToolAction};
 
-macro_rules! move_to_current_scope {
-    ($( $i:ident ),*) => {
-        $(let $i = $i.clone();)*
-    };
+pub struct EventHandler {
+    canvas_ref: NodeRef,
+    tools: Vec<tools::Tool>,
+    shapes: Vec<Shape>,
 }
 
-macro_rules! handle_canvas_by_tool {
-    ($onevent:ident, $canvas_ref:expr, $shapes:expr, $tools:expr, $cur_tool:expr) => {
-        let $onevent = {
-            let canvas_ref = $canvas_ref.clone();
-            let shapes = $shapes.clone();
-            let tools = $tools.clone();
-            let cur_tool = $cur_tool.clone();
-            Callback::from(move |event: MouseEvent| {
-                let mut tools = tools.borrow_mut();
-                if *cur_tool > tools.len() {
-                    cur_tool.set(0)
+impl EventHandler {
+    fn new(canvas_ref: NodeRef) -> Self {
+        Self {
+            canvas_ref,
+            tools: vec![
+                tools::select_tool::SelectTool::default().into(),
+                tools::shape_tool::ShapeTool::new(
+                    "ti-square",
+                    "Rectangle drawing tool.",
+                    shapes::Rectangle::default().into(),
+                )
+                .into(),
+                tools::shape_tool::ShapeTool::new(
+                    "ti-circle",
+                    "Ellipse drawing tool.",
+                    shapes::Ellipse::default().into(),
+                )
+                .into(),
+            ],
+            shapes: vec![],
+        }
+    }
+    fn get_canvas(&self) -> HtmlCanvasElement {
+        self.canvas_ref.cast::<HtmlCanvasElement>().unwrap()
+    }
+    fn refresh_canvas(&self) {
+        canvas::refresh_canvas(self.get_canvas(), &self.shapes, None);
+    }
+    fn handle_ptr_event(&mut self, event: PointerEvent, mut tool_idx: usize) {
+        if tool_idx >= self.tools.len() {
+            tool_idx = 0;
+        }
+        let canvas = self.get_canvas();
+        let tool = &mut self.tools[tool_idx];
+        let position = get_event_canvas_postion(&canvas, &event);
+        match event.type_().as_str() {
+            "pointerdown" => {
+                if tool.onmousedown(position, canvas.clone(), &mut self.shapes) {
+                    canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
                 }
-                let tool = &mut tools[*cur_tool];
-                let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-                let position = get_event_canvas_postion(canvas.clone(), event);
-                if tool.$onevent(position, canvas.clone(), &mut shapes.borrow_mut()) {
-                    canvas::refresh_canvas(canvas, &shapes.borrow(), Some(tool.as_ref()));
+            }
+            "pointerup" => {
+                if tool.onmouseup(position, canvas.clone(), &mut self.shapes) {
+                    canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
                 }
-            })
-        };
-    };
+            }
+            "pointermove" => {
+                if tool.onmousemove(position, canvas.clone(), &mut self.shapes) {
+                    canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
+                }
+            }
+            "pointerleave" => {
+                if tool.onmouseleave(position, canvas.clone(), &mut self.shapes) {
+                    canvas::refresh_canvas(canvas, &self.shapes, Some(tool));
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let tools: Vec<Box<dyn tools::Tool>> = vec![
-        Box::<tools::select_tool::SelectTool>::default(),
-        Box::new(tools::shape_tool::ShapeTool::new(
-            "ti-square",
-            "Rectangle drawing tool.",
-            shapes::Rectangle::default().into(),
-        )),
-        Box::new(tools::shape_tool::ShapeTool::new(
-            "ti-circle",
-            "Ellipse drawing tool.",
-            shapes::Ellipse::default().into(),
-        )),
-    ];
-    let tools = use_mut_ref(|| tools);
     let canvas_ref = use_node_ref();
-    let shapes = use_mut_ref(Vec::<Shape>::new);
     let cur_tool = use_state_eq(|| 0);
+    let event_handler = use_mut_ref(|| EventHandler::new(canvas_ref.clone()));
 
-    handle_canvas_by_tool! {onmousedown, canvas_ref, shapes, tools, cur_tool};
-    handle_canvas_by_tool! {onmouseup, canvas_ref, shapes, tools, cur_tool};
-    handle_canvas_by_tool! {onmousemove, canvas_ref, shapes, tools, cur_tool};
-    handle_canvas_by_tool! {onmouseleave, canvas_ref, shapes, tools, cur_tool};
-
-    let onresize = {
-        move_to_current_scope!(canvas_ref, shapes);
-        Callback::from(move |_| {
-            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            canvas::refresh_canvas(canvas, &shapes.borrow(), None);
+    let on_pointer_event = {
+        let event_handler = event_handler.clone();
+        let cur_tool = cur_tool.clone();
+        Callback::from(move |event| {
+            event_handler
+                .borrow_mut()
+                .handle_ptr_event(event, *cur_tool)
         })
     };
-    {
-        move_to_current_scope!(canvas_ref, shapes);
-        use_effect(move || {
-            let canvas: HtmlCanvasElement = canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-            canvas::refresh_canvas(canvas, &shapes.borrow(), None);
-        })
-    }
+
+    let onresize = {
+        let event_handler = event_handler.clone();
+        Callback::from(move |_| event_handler.borrow().refresh_canvas())
+    };
 
     html! {
         <div style="min-height: 100vh; display: flex;">
@@ -84,7 +103,7 @@ pub fn app() -> Html {
                 top: 0;
             "#>
             {
-                tools.borrow().iter().enumerate().map(|(i,tool)|{
+                event_handler.borrow().tools.iter().enumerate().map(|(i,tool)|{
                     let color = if i == *cur_tool {"border: 2px solid blue ;"} else {""};
                     html!{
                     <button
@@ -102,12 +121,11 @@ pub fn app() -> Html {
             <canvas
                 style="flex: 1"
                 ref={canvas_ref}
-                {onmouseup}
-                {onmousemove}
-                {onmousedown}
-                {onmouseleave}
+                onpointerup={on_pointer_event.clone()}
+                onpointerdown={on_pointer_event.clone()}
+                onpointermove={on_pointer_event.clone()}
                 {onresize}
-                />
+            />
         </div>
     }
 }
