@@ -4,8 +4,7 @@ use yew::NodeRef;
 use yew::PointerEvent;
 
 use super::shapes::{Draw, Shape};
-use super::tools::{Tool, ToolAction};
-use super::{shapes, tools};
+use super::tools::{ToolAction, ToolBar};
 
 type Point = (f64, f64);
 
@@ -20,8 +19,7 @@ pub enum Event {
 
 pub struct EventHandler {
     canvas_ref: NodeRef,
-    tools: [Tool; 3],
-    tool_idx: usize,
+    tools: ToolBar,
     shapes: Vec<Shape>,
     event: Option<Event>,
 }
@@ -30,39 +28,18 @@ impl EventHandler {
     pub fn new(canvas_ref: NodeRef) -> Self {
         Self {
             canvas_ref,
-            tools: [
-                tools::select_tool::SelectTool::default().into(),
-                tools::shape_tool::ShapeTool::new(
-                    "ti-square",
-                    "Rectangle drawing tool.",
-                    shapes::Rectangle::default().into(),
-                )
-                .into(),
-                tools::shape_tool::ShapeTool::new(
-                    "ti-circle",
-                    "Ellipse drawing tool.",
-                    shapes::Ellipse::default().into(),
-                )
-                .into(),
-            ],
+            tools: ToolBar::new(),
             shapes: Default::default(),
             event: Default::default(),
-            tool_idx: Default::default(),
         }
     }
 
-    pub fn all_tools(&self) -> &[Tool] {
+    pub fn toolbar(&self) -> &ToolBar {
         &self.tools
     }
 
-    pub fn tool_idx(&self) -> usize {
-        self.tool_idx
-    }
-    pub fn set_tool_idx(&mut self, mut tool_idx: usize) {
-        if tool_idx >= self.tools.len() {
-            tool_idx = 0;
-        }
-        self.tool_idx = tool_idx
+    pub fn toolbar_mut(&mut self) -> &mut ToolBar {
+        &mut self.tools
     }
 
     pub fn reset_canvas(&self) {
@@ -118,9 +95,9 @@ impl EventHandler {
             _ => None,
         };
         if let Some(event) = &event {
-            if self.tools[self.tool_idx].handle_event(event, &mut self.shapes) {
+            if self.tools.handle_event(event, &mut self.shapes) {
                 let context = self.redraw_canvas();
-                self.tools[self.tool_idx].draw_extra_shapes(&context);
+                self.tools.tool().draw_extra_shapes(&context);
             }
         }
         self.event = event;
