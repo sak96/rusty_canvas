@@ -1,9 +1,9 @@
 use super::ToolAction;
+use crate::app::events::Event;
 use crate::app::shapes::{BBox, Draw, Shape};
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::CanvasRenderingContext2d;
 
 pub struct ShapeTool {
-    start: Option<(f64, f64)>,
     icon: &'static str,
     title: &'static str,
     shape: Shape,
@@ -11,16 +11,10 @@ pub struct ShapeTool {
 
 impl ShapeTool {
     pub fn new(icon: &'static str, title: &'static str, shape: Shape) -> Self {
-        Self {
-            icon,
-            title,
-            shape,
-            start: None,
-        }
+        Self { icon, title, shape }
     }
 }
 
-#[allow(unused_variables)]
 impl ToolAction for ShapeTool {
     fn button_icon(&self) -> &'static str {
         self.icon
@@ -30,51 +24,27 @@ impl ToolAction for ShapeTool {
         self.title
     }
 
-    fn onmousedown(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        self.start.replace(position);
-        self.shape
-            .resize_to_bbox(&BBox::from_corner(position, position));
-        true
-    }
-
-    fn onmouseup(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        if let Some(start) = self.start.take() {
-            let mut shape = self.shape.clone();
-            let changed = shape.resize_to_bbox(&BBox::from_corner(start, position));
-            shapes.push(shape);
-            changed
-        } else {
-            false
-        }
-    }
-
-    fn onmousemove(
-        &mut self,
-        position: (f64, f64),
-        canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Shape>,
-    ) -> bool {
-        if let Some(start) = self.start {
-            self.shape
-                .resize_to_bbox(&BBox::from_corner(start, position))
-        } else {
-            false
-        }
-    }
-
     fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {
-        if self.start.is_some() {
+        let bbox = self.shape.bbox();
+        if bbox.width != 0.0 || bbox.height != 0.0 {
             self.shape.draw(context);
+        }
+    }
+
+    fn handle_event(&mut self, event: &Event, shapes: &mut Vec<Shape>) -> bool {
+        match event {
+            Event::DragMove((start, end)) => {
+                self.shape.resize_to_bbox(&BBox::from_corner(start, end));
+                true
+            }
+            Event::DragEnd((start, end)) => {
+                let mut shape = self.shape.clone();
+                let changed = shape.resize_to_bbox(&BBox::from_corner(start, end));
+                self.shape.resize_to_bbox(&BBox::default());
+                shapes.push(shape);
+                changed
+            }
+            _ => false,
         }
     }
 }

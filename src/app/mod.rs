@@ -35,7 +35,7 @@ pub fn app() -> Html {
                 top: 0;
             "#>
             {
-                event_handler.borrow().tools().iter().enumerate().map(|(i,tool)|{
+                event_handler.borrow().all_tools().iter().enumerate().map(|(i,tool)|{
                     let color = if i == *cur_tool {"border: 2px solid blue ;"} else {""};
                     html!{
                     <button

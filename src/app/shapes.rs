@@ -2,7 +2,7 @@ use enum_dispatch::enum_dispatch;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub struct BBox {
     pub left: f64,
     pub top: f64,
@@ -11,10 +11,10 @@ pub struct BBox {
 }
 
 impl BBox {
-    pub fn from_corner((x1, y1): (f64, f64), (x, y): (f64, f64)) -> Self {
+    pub fn from_corner((x1, y1): &(f64, f64), (x, y): &(f64, f64)) -> Self {
         Self {
-            left: x.min(x1),
-            top: y.min(y1),
+            left: x.min(*x1),
+            top: y.min(*y1),
             width: (x - x1).abs(),
             height: (y - y1).abs(),
         }
