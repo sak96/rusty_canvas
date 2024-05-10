@@ -1,22 +1,18 @@
 use super::Tool;
-use crate::app::shapes::{BBox, Draw, Rectangle};
+use crate::app::shapes::{BBox, Draw, Rectangle, Shape};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 #[derive(Default)]
 pub struct SelectTool {
     start: Option<(f64, f64)>,
-    shape: Rectangle,
+    selected_area: Rectangle,
     shapes: Vec<Rectangle>,
 }
 
 const PADDING: f64 = 5.0;
 
 impl SelectTool {
-    fn handle_selection(
-        &self,
-        selection: &BBox,
-        shapes: &mut Vec<Box<dyn Draw>>,
-    ) -> Vec<Rectangle> {
+    fn handle_selection(&self, selection: &BBox, shapes: &mut Vec<Shape>) -> Vec<Rectangle> {
         let mut selections = vec![];
         for shape in shapes {
             let mut bbox = shape.bbox();
@@ -46,12 +42,12 @@ impl Tool for SelectTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
-        self.shape.is_selection = true;
+        self.selected_area.is_selection = true;
         self.start.replace(position);
         let selected_area = BBox::from_corner(position, position);
-        self.shape.resize_to_bbox(&selected_area);
+        self.selected_area.resize_to_bbox(&selected_area);
         true
     }
 
@@ -59,7 +55,7 @@ impl Tool for SelectTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         if let Some(start) = self.start.take() {
             let selection = BBox::from_corner(start, position);
@@ -70,7 +66,7 @@ impl Tool for SelectTool {
                     bbox.add_bbox(&shape.bbox())
                 }
                 bbox.add_padding(2.0 * PADDING);
-                self.shape.resize_to_bbox(&bbox);
+                self.selected_area.resize_to_bbox(&bbox);
             }
             true
         } else {
@@ -82,11 +78,11 @@ impl Tool for SelectTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         if let Some(start) = self.start {
             let selection = BBox::from_corner(start, position);
-            self.shape.resize_to_bbox(&selection);
+            self.selected_area.resize_to_bbox(&selection);
             self.shapes = self.handle_selection(&selection, shapes);
             true
         } else {
@@ -97,7 +93,7 @@ impl Tool for SelectTool {
     fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {
         // if either some thing is selected or selection is happening
         if !self.shapes.is_empty() || self.start.is_some() {
-            self.shape.draw(context);
+            self.selected_area.draw(context);
             for shape in &self.shapes {
                 shape.draw(context);
             }
