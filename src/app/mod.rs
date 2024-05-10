@@ -4,7 +4,7 @@ mod tools;
 use web_sys::HtmlCanvasElement;
 use yew::prelude::*;
 
-use crate::app::{canvas::get_event_canvas_postion, shapes::Draw};
+use crate::app::{canvas::get_event_canvas_postion, shapes::Shape};
 
 macro_rules! move_to_current_scope {
     ($( $i:ident ),*) => {
@@ -52,7 +52,7 @@ pub fn app() -> Html {
     ];
     let tools = use_mut_ref(|| tools);
     let canvas_ref = use_node_ref();
-    let shapes = use_mut_ref(Vec::<Box<dyn Draw>>::new);
+    let shapes = use_mut_ref(Vec::<Shape>::new);
     let cur_tool = use_state_eq(|| 0);
 
     handle_canvas_by_tool! {onmousedown, canvas_ref, shapes, tools, cur_tool};

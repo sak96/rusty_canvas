@@ -1,8 +1,8 @@
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
-use super::shapes::Draw;
-pub mod shape_tool;
+use super::shapes::Shape;
 pub mod select_tool;
+pub mod shape_tool;
 
 #[allow(unused_variables)]
 pub trait Tool {
@@ -12,7 +12,7 @@ pub trait Tool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         false
     }
@@ -20,7 +20,7 @@ pub trait Tool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         false
     }
@@ -28,7 +28,7 @@ pub trait Tool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         false
     }
@@ -36,7 +36,7 @@ pub trait Tool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         self.onmouseup(position, canvas, shapes)
     }

@@ -34,7 +34,7 @@ impl Tool for ShapeTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         self.start.replace(position);
         self.shape
@@ -46,12 +46,12 @@ impl Tool for ShapeTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         if let Some(start) = self.start.take() {
             let mut shape = self.shape.clone();
             let changed = shape.resize_to_bbox(&BBox::from_corner(start, position));
-            shapes.push(Box::new(shape));
+            shapes.push(shape);
             changed
         } else {
             false
@@ -62,7 +62,7 @@ impl Tool for ShapeTool {
         &mut self,
         position: (f64, f64),
         canvas: HtmlCanvasElement,
-        shapes: &mut Vec<Box<dyn Draw>>,
+        shapes: &mut Vec<Shape>,
     ) -> bool {
         if let Some(start) = self.start {
             self.shape
