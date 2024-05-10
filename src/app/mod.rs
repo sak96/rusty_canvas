@@ -19,7 +19,7 @@ pub fn app() -> Html {
     let set_tool_idx = {
         let event_handler = event_handler.clone();
         Callback::from(move |idx| {
-            event_handler.borrow_mut().set_tool_idx(idx);
+            event_handler.borrow_mut().toolbar_mut().set_tool_idx(idx);
             force_trigger.force_update();
         })
     };
@@ -37,9 +37,11 @@ pub fn app() -> Html {
                 margin-left: -20px;
                 top: 0;
             "#>
-            {
-                event_handler.borrow().all_tools().iter().enumerate().map(|(i,tool)|{
-                    let color = if i == event_handler.borrow().tool_idx() {"border: 2px solid blue ;"} else {""};
+            {{
+                let event_handler = event_handler.borrow();
+                let tool_bar = event_handler.toolbar();
+                tool_bar.all_tools().iter().enumerate().map(|(i,tool)|{
+                    let color = if i == tool_bar.get_tool_idx() {"border: 2px solid blue ;"} else {""};
                     html!{
                     <button
                         class={classes!("ti", tool.button_icon())}
@@ -51,7 +53,7 @@ pub fn app() -> Html {
                         }
                     />
                 }}).collect::<Html>()
-            }
+            }}
             </div>
             <canvas
                 style="flex: 1"
