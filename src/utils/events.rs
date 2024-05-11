@@ -3,8 +3,8 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::NodeRef;
 use yew::PointerEvent;
 
-use super::shapes::{Draw, Shape};
-use super::tools::{ToolAction, ToolBar};
+use crate::store::shapes::{Draw, Shape};
+use crate::utils::tools::{ToolAction, ToolBar};
 
 type Point = (f64, f64);
 

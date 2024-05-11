@@ -1,6 +1,5 @@
-mod events;
-mod shapes;
-mod tools;
+use crate::utils::events;
+use crate::utils::tools;
 
 use tools::ToolAction;
 use yew::prelude::*;
