@@ -28,6 +28,10 @@ pub fn app() -> Html {
         let event_handler = event_handler.clone();
         Callback::from(move |_| event_handler.borrow().reset_canvas())
     };
+    {
+        let event_handler = event_handler.clone();
+        use_effect_with((), move |_| event_handler.borrow().reset_canvas())
+    };
 
     html! {
         <div style="min-height: 100vh; display: flex;">
