@@ -1,8 +1,8 @@
 use enum_dispatch::enum_dispatch;
 use web_sys::CanvasRenderingContext2d;
 
-use super::events::Event;
-use super::shapes::{Ellipse, Rectangle, Shape};
+use crate::store::shapes::{Ellipse, Rectangle, Shape};
+use crate::utils::events::Event;
 pub mod select_tool;
 pub mod shape_tool;
 

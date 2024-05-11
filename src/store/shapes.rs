@@ -149,6 +149,7 @@ impl Draw for Ellipse {
 
 #[enum_dispatch(Draw)]
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum Shape {
     Rectangle,
     Ellipse,

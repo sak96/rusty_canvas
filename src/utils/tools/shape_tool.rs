@@ -1,6 +1,6 @@
 use super::ToolAction;
-use crate::app::events::Event;
-use crate::app::shapes::{BBox, Draw, Shape};
+use crate::store::shapes::{BBox, Draw, Shape};
+use crate::utils::events::Event;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct ShapeTool {
