@@ -4,7 +4,7 @@ use strum_macros::{Display, EnumString};
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
-#[derive(PartialEq, Debug, Default)]
+#[derive(PartialEq, Clone, Debug, Default)]
 pub struct BBox {
     pub left: f64,
     pub top: f64,
@@ -183,10 +183,7 @@ impl DrawableShape {
 
 #[derive(Clone)]
 pub struct Shape {
-    left: f64,
-    top: f64,
-    width: f64,
-    height: f64,
+    bbox: BBox,
     shape: String,
 }
 
@@ -196,17 +193,8 @@ where
 {
     fn from(value: T) -> Self {
         let drawable: DrawableShape = value.into();
-        let BBox {
-            left,
-            top,
-            width,
-            height,
-        } = drawable.bbox();
         Self {
-            left,
-            top,
-            width,
-            height,
+            bbox: drawable.bbox(),
             shape: drawable.to_string(),
         }
     }
@@ -214,28 +202,16 @@ where
 
 impl Shape {
     pub fn bbox(&self) -> BBox {
-        BBox {
-            left: self.left,
-            top: self.top,
-            width: self.width,
-            height: self.height,
-        }
+        self.bbox.clone()
     }
 
     pub fn draw(&self, context: &CanvasRenderingContext2d) {
         DrawableShape::new(&self.shape, &self.bbox()).draw(context);
     }
 
-    fn _resize_to_bbox(&mut self, bbox: &BBox) {
-        self.left = bbox.left;
-        self.top = bbox.top;
-        self.width = bbox.width;
-        self.height = bbox.height;
-    }
-
     pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
         if &self.bbox() != bbox {
-            self._resize_to_bbox(bbox);
+            self.bbox = bbox.clone();
             true
         } else {
             false
