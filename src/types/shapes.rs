@@ -6,6 +6,10 @@ use web_sys::CanvasRenderingContext2d;
 
 use serde::{Deserialize, Serialize};
 
+use crate::types::ids::Id;
+use crate::types::tools::shape_tool::ShapeToolDetails;
+use crate::types::version::Version;
+
 #[derive(PartialEq, Clone, Debug, Default, Deserialize, Serialize)]
 pub struct BBox {
     pub left: f64,
@@ -103,6 +107,16 @@ impl Draw for Rectangle {
     }
 }
 
+impl ShapeToolDetails for Rectangle {
+    fn button_icon(&self) -> &'static str {
+        "ti-square"
+    }
+
+    fn button_title(&self) -> &'static str {
+        "Rectangle drawing tool."
+    }
+}
+
 #[derive(Clone, Default)]
 pub struct Selection(Rectangle);
 
@@ -167,6 +181,16 @@ impl Draw for Ellipse {
     }
 }
 
+impl ShapeToolDetails for Ellipse {
+    fn button_icon(&self) -> &'static str {
+        "ti-circle"
+    }
+
+    fn button_title(&self) -> &'static str {
+        "Ellipse drawing tool."
+    }
+}
+
 #[enum_dispatch(Draw)]
 #[derive(Clone, EnumString, Display)]
 #[non_exhaustive]
@@ -183,10 +207,18 @@ impl DrawableShape {
     }
 }
 
-#[derive(Default, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Default, Clone, Deserialize, Serialize)]
 pub struct Shape {
     bbox: BBox,
     shape: String,
+    id: Id,
+    version: Version,
+}
+
+impl PartialEq for Shape {
+    fn eq(&self, other: &Self) -> bool {
+        self.id.eq(&other.id) && self.version.eq(&other.version)
+    }
 }
 
 impl<T> From<T> for Shape
@@ -198,11 +230,17 @@ where
         Self {
             bbox: drawable.bbox(),
             shape: drawable.to_string(),
+            id: Id::default(),
+            version: Version::default(),
         }
     }
 }
 
 impl Shape {
+    pub fn get_id(&self) -> &Id {
+        &self.id
+    }
+
     pub fn bbox(&self) -> BBox {
         self.bbox.clone()
     }
@@ -214,6 +252,7 @@ impl Shape {
     pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
         if &self.bbox() != bbox {
             self.bbox = bbox.clone();
+            self.version.increment();
             true
         } else {
             false

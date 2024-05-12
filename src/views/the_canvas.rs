@@ -10,12 +10,14 @@ use yewdux::prelude::*;
 
 use crate::store::shapes::Shapes;
 use crate::types::events::Event;
-use crate::utils::tools::{ToolAction, ToolBar};
+use crate::types::shapes::{Selection, Shape};
+use crate::types::tools::ToolBar;
 
 pub struct EventHandler {
     canvas_ref: NodeRef,
     tools: ToolBar,
     event: Option<Event>,
+    shape: Option<Shape>,
 }
 
 impl PartialEq for EventHandler {
@@ -24,12 +26,15 @@ impl PartialEq for EventHandler {
     }
 }
 
+const PADDING: f64 = 5.0;
+
 impl EventHandler {
     pub fn new(canvas_ref: NodeRef) -> Self {
         Self {
             canvas_ref,
             tools: ToolBar::new(),
             event: Default::default(),
+            shape: Default::default(),
         }
     }
 
@@ -41,7 +46,7 @@ impl EventHandler {
         &mut self.tools
     }
 
-    fn refresh_canvas(&self, shapes: &Shapes) -> CanvasRenderingContext2d {
+    fn refresh_canvas(&self, shapes: &Shapes) {
         let canvas = self.get_canvas();
         canvas.set_width(canvas.client_width().abs_diff(0));
         canvas.set_height(canvas.client_height().abs_diff(0));
@@ -52,10 +57,37 @@ impl EventHandler {
             .dyn_into()
             .unwrap();
         context.clear_rect(0.0, 0.0, canvas.width() as f64, canvas.height() as f64);
-        for shape in &shapes.0 {
+        let mut selections = vec![];
+        for shape in &shapes.shapes {
+            shape.draw(&context);
+            if shapes.selected_shapes.contains(shape.get_id()) {
+                let mut padded_bbox = shape.bbox();
+                padded_bbox.add_padding(PADDING);
+                let mut sel_shape: Shape = Selection::default().into();
+                sel_shape.resize_to_bbox(&padded_bbox);
+                selections.push(sel_shape);
+            }
+        }
+        for shape in &selections {
             shape.draw(&context);
         }
-        context
+        match selections.split_first() {
+            Some((first, [])) => first.draw(&context),
+            Some((first, rest)) => {
+                let mut group = first.bbox();
+                for shape in rest {
+                    group.add_bbox(&shape.bbox());
+                    shape.draw(&context);
+                }
+                let mut sel_shape: Shape = Selection::default().into();
+                sel_shape.resize_to_bbox(&group);
+                sel_shape.draw(&context);
+            }
+            None => {}
+        }
+        if let Some(shape) = &self.shape {
+            shape.draw(&context);
+        }
     }
 
     fn get_event_canvas_postion(canvas: &HtmlCanvasElement, event: &PointerEvent) -> (f64, f64) {
@@ -90,10 +122,7 @@ impl EventHandler {
             _ => None,
         };
         if let Some(event) = &event {
-            if self.tools.handle_event(event, &mut shapes.0) {
-                let context = self.refresh_canvas(shapes);
-                self.tools.tool().draw_extra_shapes(&context);
-            }
+            self.shape = self.tools.handle_event(event, shapes);
         }
         self.event = event;
     }
@@ -126,7 +155,7 @@ pub fn the_canvas(TheCanvasProps { event_handler }: &TheCanvasProps) -> Html {
     };
     {
         let event_handler = event_handler.clone();
-        use_effect_with((), move |_| {
+        use_effect_with(shapes.clone(), move |_| {
             event_handler.borrow().refresh_canvas(&shapes);
         });
     };
