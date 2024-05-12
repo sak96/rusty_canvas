@@ -74,7 +74,6 @@ pub struct Rectangle {
     top: f64,
     width: f64,
     height: f64,
-    pub is_selection: bool,
 }
 
 impl Draw for Rectangle {
@@ -88,11 +87,7 @@ impl Draw for Rectangle {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        if self.is_selection {
-            context.set_stroke_style(&JsValue::from_str("blue"));
-        } else {
-            context.set_stroke_style(&JsValue::from_str("green"));
-        }
+        context.set_stroke_style(&JsValue::from_str("green"));
         context.stroke_rect(self.left, self.top, self.width, self.height);
     }
 
@@ -101,6 +96,27 @@ impl Draw for Rectangle {
         self.top = bbox.top;
         self.width = bbox.width;
         self.height = bbox.height;
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Selection(Rectangle);
+
+impl Draw for Selection {
+    fn bbox(&self) -> BBox {
+        self.0.bbox()
+    }
+
+    fn draw(&self, context: &CanvasRenderingContext2d) {
+        context.set_stroke_style(&JsValue::from_str("blue"));
+        let dashes = web_sys::js_sys::Array::new();
+        dashes.push(&JsValue::from_f64(5.0));
+        context.set_line_dash(&dashes).unwrap();
+        context.stroke_rect(self.0.left, self.0.top, self.0.width, self.0.height);
+    }
+
+    fn _resize_to_bbox(&mut self, bbox: &BBox) {
+        self.0._resize_to_bbox(bbox);
     }
 }
 
@@ -151,6 +167,7 @@ impl Draw for Ellipse {
 #[derive(Clone)]
 #[non_exhaustive]
 pub enum DrawableShape {
+    Selection,
     Rectangle,
     Ellipse,
 }
