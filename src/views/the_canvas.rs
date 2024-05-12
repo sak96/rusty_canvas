@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
@@ -9,13 +6,14 @@ use yew::PointerEvent;
 use yewdux::prelude::*;
 
 use crate::store::shapes::Shapes;
+use crate::store::tools::Tools;
 use crate::types::events::Event;
 use crate::types::shapes::{Selection, Shape};
-use crate::types::tools::ToolBar;
+use crate::types::tools::{Tool, ToolAction};
 
 pub struct EventHandler {
     canvas_ref: NodeRef,
-    tools: ToolBar,
+    tool: Tool,
     event: Option<Event>,
     shape: Option<Shape>,
 }
@@ -32,18 +30,14 @@ impl EventHandler {
     pub fn new(canvas_ref: NodeRef) -> Self {
         Self {
             canvas_ref,
-            tools: ToolBar::new(),
+            tool: Tool::default(),
             event: Default::default(),
             shape: Default::default(),
         }
     }
 
-    pub fn toolbar(&self) -> &ToolBar {
-        &self.tools
-    }
-
-    pub fn toolbar_mut(&mut self) -> &mut ToolBar {
-        &mut self.tools
+    pub fn set_tool(&mut self, tool: &Tool) {
+        self.tool = tool.clone()
     }
 
     fn refresh_canvas(&self, shapes: &Shapes) {
@@ -122,7 +116,7 @@ impl EventHandler {
             _ => None,
         };
         if let Some(event) = &event {
-            self.shape = self.tools.handle_event(event, shapes);
+            self.shape = self.tool.handle_event(event, shapes);
         }
         self.event = event;
     }
@@ -132,13 +126,10 @@ impl EventHandler {
     }
 }
 
-#[derive(Properties, PartialEq)]
-pub struct TheCanvasProps {
-    pub event_handler: Rc<RefCell<EventHandler>>,
-}
-
 #[function_component(TheCanvas)]
-pub fn the_canvas(TheCanvasProps { event_handler }: &TheCanvasProps) -> Html {
+pub fn the_canvas() -> Html {
+    let canvas_ref = use_node_ref();
+    let event_handler = use_mut_ref(|| EventHandler::new(canvas_ref.clone()));
     let (shapes, shapes_dispatch) = use_store::<Shapes>();
     let on_pointer_event = {
         let event_handler = event_handler.clone();
@@ -157,6 +148,13 @@ pub fn the_canvas(TheCanvasProps { event_handler }: &TheCanvasProps) -> Html {
         let event_handler = event_handler.clone();
         use_effect_with(shapes.clone(), move |_| {
             event_handler.borrow().refresh_canvas(&shapes);
+        });
+    };
+    let current_tool = use_selector(|tools: &Tools| tools.tool.clone());
+    {
+        let event_handler = event_handler.clone();
+        use_effect_with(current_tool.clone(), move |tool| {
+            event_handler.borrow_mut().set_tool(tool.as_ref());
         });
     };
 

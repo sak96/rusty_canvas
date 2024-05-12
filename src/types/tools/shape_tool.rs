@@ -10,7 +10,7 @@ pub trait ShapeToolDetails {
     fn button_title(&self) -> &'static str;
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ShapeTool<T> {
     marker: PhantomData<T>,
 }

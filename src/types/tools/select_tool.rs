@@ -3,7 +3,7 @@ use crate::store::shapes::Shapes;
 use crate::types::events::Event;
 use crate::types::shapes::{BBox, Selection, Shape};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct SelectTool;
 
 impl SelectTool {
@@ -43,6 +43,7 @@ impl ToolAction for SelectTool {
             Event::DragEnd((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 Self::update_selection(&selection, shapes);
+                shapes.version.increment();
                 None
             }
             _ => None,
