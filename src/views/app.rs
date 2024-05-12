@@ -1,5 +1,5 @@
 use crate::{
-    utils::tools::ToolAction,
+    types::tools::ToolAction,
     views::the_canvas::{EventHandler, TheCanvas},
 };
 use yew::prelude::*;

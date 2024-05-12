@@ -1,17 +1,19 @@
 use enum_dispatch::enum_dispatch;
-use web_sys::CanvasRenderingContext2d;
 
+use crate::store::shapes::Shapes;
 use crate::types::events::Event;
-use crate::types::shapes::{Ellipse, Rectangle, Shape};
+use crate::types::shapes::Shape;
 pub mod select_tool;
 pub mod shape_tool;
 
 use select_tool::SelectTool;
-use shape_tool::ShapeTool;
+use shape_tool::{EllipseTool, RectangleTool};
 
 #[enum_dispatch(ToolAction)]
+#[allow(clippy::enum_variant_names)]
 pub enum Tool {
-    ShapeTool,
+    RectangleTool,
+    EllipseTool,
     SelectTool,
 }
 
@@ -20,8 +22,7 @@ pub enum Tool {
 pub trait ToolAction {
     fn button_icon(&self) -> &'static str;
     fn button_title(&self) -> &'static str;
-    fn draw_extra_shapes(&self, context: &CanvasRenderingContext2d) {}
-    fn handle_event(&mut self, event: &Event, shapes: &mut Vec<Shape>) -> bool;
+    fn handle_event(&mut self, event: &Event, shapes: &mut Shapes) -> Option<Shape>;
 }
 
 pub struct ToolBar {
@@ -33,19 +34,9 @@ impl ToolBar {
     pub fn new() -> Self {
         Self {
             tools: [
-                select_tool::SelectTool::default().into(),
-                shape_tool::ShapeTool::new(
-                    "ti-square",
-                    "Rectangle drawing tool.",
-                    Rectangle::default().into(),
-                )
-                .into(),
-                shape_tool::ShapeTool::new(
-                    "ti-circle",
-                    "Ellipse drawing tool.",
-                    Ellipse::default().into(),
-                )
-                .into(),
+                SelectTool {}.into(),
+                RectangleTool::default().into(),
+                EllipseTool::default().into(),
             ],
             tool_idx: 0,
         }
@@ -66,11 +57,7 @@ impl ToolBar {
         self.tool_idx = tool_idx
     }
 
-    pub fn tool(&self) -> &Tool {
-        &self.tools[self.tool_idx]
-    }
-
-    pub fn handle_event(&mut self, event: &Event, shapes: &mut Vec<Shape>) -> bool {
+    pub fn handle_event(&mut self, event: &Event, shapes: &mut Shapes) -> Option<Shape> {
         self.tools[self.tool_idx].handle_event(event, shapes)
     }
 }
