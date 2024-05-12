@@ -67,9 +67,11 @@ impl ToolAction for SelectTool {
 
     fn handle_event(&mut self, event: &Event, shapes: &mut Vec<Shape>) -> bool {
         match event {
-            Event::PointerEventStart(_) => {
+            Event::PointerEventStart(start) => {
                 let changed = !self.shapes.is_empty();
                 self.selected_area.is_selection = true;
+                self.selected_area
+                    .resize_to_bbox(&BBox::from_corner(start, start));
                 self.shapes.clear();
                 changed
             }
