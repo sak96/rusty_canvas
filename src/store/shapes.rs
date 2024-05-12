@@ -54,7 +54,7 @@ impl BBox {
 }
 
 #[enum_dispatch]
-pub trait Draw {
+trait Draw {
     fn bbox(&self) -> BBox;
     fn draw(&self, context: &CanvasRenderingContext2d);
     fn _resize_to_bbox(&mut self, bbox: &BBox);
@@ -150,7 +150,72 @@ impl Draw for Ellipse {
 #[enum_dispatch(Draw)]
 #[derive(Clone)]
 #[non_exhaustive]
-pub enum Shape {
+pub enum DrawableShape {
     Rectangle,
     Ellipse,
+}
+
+#[derive(Clone)]
+pub struct Shape {
+    left: f64,
+    top: f64,
+    width: f64,
+    height: f64,
+    drawable: DrawableShape,
+}
+
+impl<T> From<T> for Shape
+where
+    T: Into<DrawableShape>,
+{
+    fn from(value: T) -> Self {
+        let drawable: DrawableShape = value.into();
+        let BBox {
+            left,
+            top,
+            width,
+            height,
+        } = drawable.bbox();
+        Self {
+            left,
+            top,
+            width,
+            height,
+            drawable,
+        }
+    }
+}
+
+impl Shape {
+    pub fn bbox(&self) -> BBox {
+        BBox {
+            left: self.left,
+            top: self.top,
+            width: self.width,
+            height: self.height,
+        }
+    }
+
+    pub fn draw(&self, context: &CanvasRenderingContext2d) {
+        // TODO: cache this
+        let mut drawable = self.drawable.clone();
+        drawable.resize_to_bbox(&self.bbox());
+        drawable.draw(context);
+    }
+
+    fn _resize_to_bbox(&mut self, bbox: &BBox) {
+        self.left = bbox.left;
+        self.top = bbox.top;
+        self.width = bbox.width;
+        self.height = bbox.height;
+    }
+
+    pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
+        if &self.bbox() != bbox {
+            self._resize_to_bbox(bbox);
+            true
+        } else {
+            false
+        }
+    }
 }

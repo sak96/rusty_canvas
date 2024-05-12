@@ -1,5 +1,5 @@
 use super::ToolAction;
-use crate::store::shapes::{BBox, Draw, Shape};
+use crate::store::shapes::{BBox, Shape};
 use crate::utils::events::Event;
 use web_sys::CanvasRenderingContext2d;
 

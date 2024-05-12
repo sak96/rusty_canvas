@@ -1,12 +1,22 @@
 use super::ToolAction;
-use crate::store::shapes::{BBox, Draw, Rectangle, Shape};
+use crate::store::shapes::{BBox, Rectangle, Shape};
 use crate::utils::events::Event;
 use web_sys::CanvasRenderingContext2d;
 
-#[derive(Default)]
 pub struct SelectTool {
-    selected_area: Rectangle,
-    shapes: Vec<Rectangle>,
+    selected_area: Shape,
+    shapes: Vec<Shape>,
+}
+
+impl Default for SelectTool {
+    fn default() -> Self {
+        let mut selected_area = Rectangle::default();
+        selected_area.is_selection = true;
+        Self {
+            selected_area: selected_area.into(),
+            shapes: vec![],
+        }
+    }
 }
 
 const PADDING: f64 = 5.0;
@@ -19,9 +29,10 @@ impl SelectTool {
             if bbox.in_(selection) {
                 bbox.add_padding(PADDING);
                 let mut rect = Rectangle::default();
-                rect.resize_to_bbox(&bbox);
                 rect.is_selection = true;
-                selections.push(rect);
+                let mut shape: Shape = rect.into();
+                shape.resize_to_bbox(&bbox);
+                selections.push(shape);
             }
         }
         self.selected_area.resize_to_bbox(selection);
@@ -69,7 +80,6 @@ impl ToolAction for SelectTool {
         match event {
             Event::PointerEventStart(start) => {
                 let changed = !self.shapes.is_empty();
-                self.selected_area.is_selection = true;
                 self.selected_area
                     .resize_to_bbox(&BBox::from_corner(start, start));
                 self.shapes.clear();
