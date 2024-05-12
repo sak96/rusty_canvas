@@ -10,6 +10,8 @@ yew = { version = "0.21.0", features = ["csr"] }
 web-sys = { version = "0.3.69", features = ["HtmlCanvasElement", "CanvasRenderingContext2d", "DomRect"] }
 wasm-bindgen = "0.2.92"
 enum_dispatch = "0.3.13"
+strum = "0.26"
+strum_macros = "0.26"
 
 [profile.release]
 panic = 'abort' # less code to include into binary

@@ -1,4 +1,6 @@
 use enum_dispatch::enum_dispatch;
+use std::str::FromStr;
+use strum_macros::{Display, EnumString};
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -164,12 +166,19 @@ impl Draw for Ellipse {
 }
 
 #[enum_dispatch(Draw)]
-#[derive(Clone)]
+#[derive(Clone, EnumString, Display)]
 #[non_exhaustive]
 pub enum DrawableShape {
     Selection,
     Rectangle,
     Ellipse,
+}
+impl DrawableShape {
+    fn new(shape: &str, bbox: &BBox) -> Self {
+        let mut drawable = Self::from_str(shape).unwrap_or_else(|_| Rectangle::default().into());
+        drawable.resize_to_bbox(bbox);
+        drawable
+    }
 }
 
 #[derive(Clone)]
@@ -178,7 +187,7 @@ pub struct Shape {
     top: f64,
     width: f64,
     height: f64,
-    drawable: DrawableShape,
+    shape: String,
 }
 
 impl<T> From<T> for Shape
@@ -198,7 +207,7 @@ where
             top,
             width,
             height,
-            drawable,
+            shape: drawable.to_string(),
         }
     }
 }
@@ -214,10 +223,7 @@ impl Shape {
     }
 
     pub fn draw(&self, context: &CanvasRenderingContext2d) {
-        // TODO: cache this
-        let mut drawable = self.drawable.clone();
-        drawable.resize_to_bbox(&self.bbox());
-        drawable.draw(context);
+        DrawableShape::new(&self.shape, &self.bbox()).draw(context);
     }
 
     fn _resize_to_bbox(&mut self, bbox: &BBox) {
