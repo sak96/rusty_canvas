@@ -4,7 +4,9 @@ use strum_macros::{Display, EnumString};
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
-#[derive(PartialEq, Clone, Debug, Default)]
+use serde::{Deserialize, Serialize};
+
+#[derive(PartialEq, Clone, Debug, Default, Deserialize, Serialize)]
 pub struct BBox {
     pub left: f64,
     pub top: f64,
@@ -181,7 +183,7 @@ impl DrawableShape {
     }
 }
 
-#[derive(Clone)]
+#[derive(Default, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Shape {
     bbox: BBox,
     shape: String,
@@ -218,3 +220,5 @@ impl Shape {
         }
     }
 }
+
+impl Eq for Shape {}

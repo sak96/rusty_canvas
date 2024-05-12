@@ -1,20 +1,15 @@
-use crate::utils::events;
-use crate::utils::tools;
-
-use tools::ToolAction;
+use crate::{
+    utils::tools::ToolAction,
+    views::the_canvas::{EventHandler, TheCanvas},
+};
 use yew::prelude::*;
 
 #[function_component(App)]
 pub fn app() -> Html {
+    // TODO: make event handler only for canvas
     let canvas_ref = use_node_ref();
-    let event_handler = use_mut_ref(|| events::EventHandler::new(canvas_ref.clone()));
+    let event_handler = use_mut_ref(|| EventHandler::new(canvas_ref.clone()));
     let force_trigger = use_force_update();
-
-    let on_pointer_event = {
-        let event_handler = event_handler.clone();
-        Callback::from(move |event| event_handler.borrow_mut().handle_ptr_event(event))
-    };
-
     let set_tool_idx = {
         let event_handler = event_handler.clone();
         Callback::from(move |idx| {
@@ -22,16 +17,6 @@ pub fn app() -> Html {
             force_trigger.force_update();
         })
     };
-
-    let onresize = {
-        let event_handler = event_handler.clone();
-        Callback::from(move |_| event_handler.borrow().reset_canvas())
-    };
-    {
-        let event_handler = event_handler.clone();
-        use_effect_with((), move |_| event_handler.borrow().reset_canvas())
-    };
-
     html! {
         <div style="min-height: 100vh; display: flex;">
             <div style=r#"
@@ -41,6 +26,7 @@ pub fn app() -> Html {
                 top: 0;
             "#>
             {{
+                let event_handler = event_handler.clone();
                 let event_handler = event_handler.borrow();
                 let tool_bar = event_handler.toolbar();
                 tool_bar.all_tools().iter().enumerate().map(|(i,tool)|{
@@ -58,14 +44,7 @@ pub fn app() -> Html {
                 }}).collect::<Html>()
             }}
             </div>
-            <canvas
-                style="flex: 1"
-                ref={canvas_ref}
-                onpointerup={on_pointer_event.clone()}
-                onpointerdown={on_pointer_event.clone()}
-                onpointermove={on_pointer_event.clone()}
-                {onresize}
-            />
+            <TheCanvas {event_handler}/>
         </div>
     }
 }
