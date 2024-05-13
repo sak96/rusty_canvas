@@ -1,7 +1,7 @@
 use enum_dispatch::enum_dispatch;
 
 use crate::store::shapes::Shapes;
-use crate::types::events::Event;
+use crate::types::events::CanvasEvent;
 use crate::types::shapes::Shape;
 
 pub mod select_tool;
@@ -42,7 +42,7 @@ pub trait ToolAction {
     fn button_title(&self) -> &'static str;
     fn handle_event(
         &mut self,
-        event: &Event,
+        event: &CanvasEvent,
         tool_shape: &mut Option<Shape>,
         shapes: &mut Shapes,
     ) -> bool;
