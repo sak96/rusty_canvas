@@ -1,6 +1,6 @@
 use enum_dispatch::enum_dispatch;
 
-use crate::store::shapes::Shapes;
+use crate::store::{shapes::Shapes, tools::Tools};
 use crate::types::events::CanvasEvent;
 use crate::types::shapes::Shape;
 
@@ -42,6 +42,7 @@ pub trait ToolAction {
     fn handle_event(
         &mut self,
         event: &CanvasEvent,
+        tools: &mut Tools,
         tool_shape: &mut Option<Shape>,
         shapes: &mut Shapes,
     ) -> bool;

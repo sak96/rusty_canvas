@@ -34,11 +34,13 @@ impl EventHandler {
         }
     }
 
-    pub fn set_tool(&mut self, tool: &Tool, shapes: &mut Shapes) {
-        if self.tool.ne(tool) {
+    pub fn set_tool(&mut self, tools: &mut Tools, shapes: &mut Shapes) {
+        if self.tool.ne(&tools.tool) {
             self.tool
-                .handle_event(&CanvasEvent::DeselectTool, &mut self.shape, shapes);
-            self.tool = tool.clone();
+                .handle_event(&CanvasEvent::DeselectTool, tools, &mut self.shape, shapes);
+            self.tool = tools.tool.clone();
+            self.tool
+                .handle_event(&CanvasEvent::SelectTool, tools, &mut self.shape, shapes);
         }
     }
 
@@ -93,7 +95,12 @@ impl EventHandler {
         (x, y)
     }
 
-    pub fn handle_ptr_event(&mut self, event: PointerEvent, shapes: &mut Shapes) {
+    pub fn handle_ptr_event(
+        &mut self,
+        event: PointerEvent,
+        tools: &mut Tools,
+        shapes: &mut Shapes,
+    ) {
         let canvas = self.get_canvas();
         let position = Self::get_event_canvas_postion(&canvas, &event);
         let canvas_event = match event.type_().as_str() {
@@ -123,7 +130,7 @@ impl EventHandler {
         if let Some(canvas_event) = &canvas_event {
             if self
                 .tool
-                .handle_event(canvas_event, &mut self.shape, shapes)
+                .handle_event(canvas_event, tools, &mut self.shape, shapes)
             {
                 event.prevent_default();
             }
@@ -141,10 +148,16 @@ pub fn the_canvas() -> Html {
     let canvas_ref = use_node_ref();
     let event_handler = use_mut_ref(|| EventHandler::new(canvas_ref.clone()));
     let (shapes, shapes_dispatch) = use_store::<Shapes>();
+    let tool_dispatch = use_dispatch::<Tools>();
     let on_pointer_event = {
         let event_handler = event_handler.clone();
+        let tool_dispatch = tool_dispatch.clone();
         shapes_dispatch.reduce_mut_callback_with(move |shapes, event: PointerEvent| {
-            event_handler.borrow_mut().handle_ptr_event(event, shapes)
+            tool_dispatch.reduce_mut(|tools| {
+                event_handler
+                    .borrow_mut()
+                    .handle_ptr_event(event, tools, shapes)
+            })
         })
     };
     let onresize = {
@@ -161,13 +174,16 @@ pub fn the_canvas() -> Html {
         });
     };
     let current_tool = use_selector(|tools: &Tools| tools.tool.clone());
+    let current_ptr = use_selector(|tools: &Tools| tools.pointer.clone());
     {
         let event_handler = event_handler.clone();
         use_effect_with(
             (current_tool.clone(), shapes_dispatch.clone()),
-            move |(tool, shapes_dispatch)| {
+            move |(_tool, shapes_dispatch)| {
                 shapes_dispatch.reduce_mut(|shapes| {
-                    event_handler.borrow_mut().set_tool(tool.as_ref(), shapes);
+                    tool_dispatch.reduce_mut(|tools| {
+                        event_handler.borrow_mut().set_tool(tools, shapes);
+                    })
                 })
             },
         );
@@ -175,7 +191,7 @@ pub fn the_canvas() -> Html {
 
     html! {
         <canvas
-            style="flex: 1"
+            style={format!("flex: 1; cursor: {current_ptr}")}
             ref={event_handler.borrow().canvas_ref.clone()}
             onpointerup={on_pointer_event.clone()}
             onpointerdown={on_pointer_event.clone()}
