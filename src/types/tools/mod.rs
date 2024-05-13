@@ -7,23 +7,22 @@ use crate::types::shapes::Shape;
 pub mod select_tool;
 pub mod shape_tool;
 
-use select_tool::SelectTool;
-use shape_tool::{EllipseTool, RectangleTool};
+use select_tool::Select;
+use shape_tool::{EllipseShape, RectangleShape};
 
 use strum_macros::{Display, EnumIter, EnumString};
 
 #[enum_dispatch(ToolAction)]
-#[allow(clippy::enum_variant_names)]
 #[derive(EnumString, EnumIter, Display, Clone)]
 pub enum Tool {
-    SelectTool,
-    RectangleTool,
-    EllipseTool,
+    Select,
+    RectangleShape,
+    EllipseShape,
 }
 
 impl Default for Tool {
     fn default() -> Self {
-        SelectTool {}.into()
+        Select {}.into()
     }
 }
 

@@ -4,9 +4,9 @@ use crate::types::events::CanvasEvent;
 use crate::types::shapes::{BBox, Selection, Shape};
 
 #[derive(Default, Clone)]
-pub struct SelectTool;
+pub struct Select;
 
-impl SelectTool {
+impl Select {
     fn update_selection(selection: &BBox, shapes: &mut Shapes) {
         shapes.selected_shapes.clear();
         for shape in &shapes.shapes {
@@ -17,7 +17,7 @@ impl SelectTool {
     }
 }
 
-impl ToolAction for SelectTool {
+impl ToolAction for Select {
     fn button_icon(&self) -> &'static str {
         "ti-marquee"
     }

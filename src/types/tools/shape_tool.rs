@@ -52,5 +52,5 @@ where
         }
     }
 }
-pub type RectangleTool = ShapeTool<Rectangle>;
-pub type EllipseTool = ShapeTool<Ellipse>;
+pub type RectangleShape = ShapeTool<Rectangle>;
+pub type EllipseShape = ShapeTool<Ellipse>;
