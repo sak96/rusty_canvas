@@ -32,7 +32,7 @@ pub fn base_button(
     .to_string();
     let title = title.clone();
     if *selected {
-        style.push_str("border: 2px solid blue ;")
+        style.push_str("background-color: lightblue;");
     }
     html! {
         <button {style} {title} {onclick}>{children.clone()}</button>
