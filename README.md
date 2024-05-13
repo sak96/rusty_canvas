@@ -1,6 +1,6 @@
 # Rusty Canvas
 
-Drawing canvas app written in Rust. 
+Drawing canvas app written in Rust.
 [Demo Link](https://sak96.github.io/rusty_canvas/).
 
 
@@ -8,10 +8,17 @@ Drawing canvas app written in Rust.
 
 - [x] draw rectangle
 - [x] draw ellipse
-- [ ] select individual
-- [ ] select group
+- [x] select individual
+- [x] select group
+- [ ] tool options
+  - [ ] colors
+  - [ ] shading fill
+  - [ ] shading stroke
+- [ ] caching shape
+- [ ] Use only serde
+- [ ] theme
 - [ ] resize selection
-- [ ] pan
+- [ ] pan tool
 
 
 # Future Road Map Choice
