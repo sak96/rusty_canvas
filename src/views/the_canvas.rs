@@ -7,14 +7,14 @@ use yewdux::prelude::*;
 
 use crate::store::shapes::Shapes;
 use crate::store::tools::Tools;
-use crate::types::events::Event;
+use crate::types::events::CanvasEvent;
 use crate::types::shapes::{Selection, Shape};
 use crate::types::tools::{Tool, ToolAction};
 
 pub struct EventHandler {
     canvas_ref: NodeRef,
     tool: Tool,
-    event: Option<Event>,
+    event: Option<CanvasEvent>,
     shape: Option<Shape>,
 }
 
@@ -39,7 +39,7 @@ impl EventHandler {
     pub fn set_tool(&mut self, tool: &Tool, shapes: &mut Shapes) {
         if self.tool.ne(tool) {
             self.tool
-                .handle_event(&Event::DeselectTool, &mut self.shape, shapes);
+                .handle_event(&CanvasEvent::DeselectTool, &mut self.shape, shapes);
             self.tool = tool.clone();
         }
     }
@@ -101,21 +101,21 @@ impl EventHandler {
         let canvas_event = match event.type_().as_str() {
             "pointerdown" => {
                 canvas.set_pointer_capture(event.pointer_id()).unwrap();
-                Some(Event::PointerEventStart(position))
+                Some(CanvasEvent::PointerEventStart(position))
             }
             "pointerup" => {
                 canvas.release_pointer_capture(event.pointer_id()).unwrap();
                 match self.event {
-                    Some(Event::PointerEventStart(_)) => Some(Event::Click(position)),
-                    Some(Event::DragMove((start, _))) => Some(Event::DragEnd((start, position))),
+                    Some(CanvasEvent::PointerEventStart(_)) => Some(CanvasEvent::Click(position)),
+                    Some(CanvasEvent::DragMove((start, _))) => Some(CanvasEvent::DragEnd((start, position))),
                     _ => None,
                 }
             }
             "pointermove" => match self.event {
-                Some(Event::PointerEventStart(start)) | Some(Event::DragMove((start, _))) => {
-                    Some(Event::DragMove((start, position)))
+                Some(CanvasEvent::PointerEventStart(start)) | Some(CanvasEvent::DragMove((start, _))) => {
+                    Some(CanvasEvent::DragMove((start, position)))
                 }
-                _ => Some(Event::Hover(position)),
+                _ => Some(CanvasEvent::Hover(position)),
             },
             _ => None,
         };

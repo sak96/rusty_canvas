@@ -1,6 +1,6 @@
 use super::ToolAction;
 use crate::store::shapes::Shapes;
-use crate::types::events::Event;
+use crate::types::events::CanvasEvent;
 use crate::types::shapes::{BBox, Selection, Shape};
 
 #[derive(Default, Clone)]
@@ -28,17 +28,17 @@ impl ToolAction for SelectTool {
 
     fn handle_event(
         &mut self,
-        event: &Event,
+        event: &CanvasEvent,
         tool_shape: &mut Option<Shape>,
         shapes: &mut Shapes,
     ) -> bool {
         match event {
-            Event::PointerEventStart(_) => {
+            CanvasEvent::PointerEventStart(_) => {
                 shapes.selected_shapes.clear();
                 tool_shape.take();
                 true
             }
-            Event::DragMove((start, end)) => {
+            CanvasEvent::DragMove((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 Self::update_selection(&selection, shapes);
                 let mut shape: Shape = Selection::default().into();
@@ -47,14 +47,14 @@ impl ToolAction for SelectTool {
                 tool_shape.replace(shape);
                 true
             }
-            Event::DragEnd((start, end)) => {
+            CanvasEvent::DragEnd((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 Self::update_selection(&selection, shapes);
                 shapes.version.increment();
                 tool_shape.take();
                 true
             }
-            Event::DeselectTool => {
+            CanvasEvent::DeselectTool => {
                 tool_shape.take();
                 shapes.selected_shapes.clear();
                 true
