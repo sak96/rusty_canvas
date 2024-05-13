@@ -1,5 +1,6 @@
 use super::ToolAction;
 use crate::store::shapes::Shapes;
+use crate::store::tools::Tools;
 use crate::types::events::CanvasEvent;
 use crate::types::shapes::{BBox, Selection, Shape};
 
@@ -29,6 +30,7 @@ impl ToolAction for Select {
     fn handle_event(
         &mut self,
         event: &CanvasEvent,
+        tools: &mut Tools,
         tool_shape: &mut Option<Shape>,
         shapes: &mut Shapes,
     ) -> bool {
@@ -57,6 +59,7 @@ impl ToolAction for Select {
             CanvasEvent::DeselectTool => {
                 tool_shape.take();
                 shapes.selected_shapes.clear();
+                tools.pointer = "default".into();
                 true
             }
             _ => false,

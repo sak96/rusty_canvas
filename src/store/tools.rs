@@ -8,6 +8,7 @@ use crate::types::tools::Tool;
 #[store(storage = "local", storage_tab_sync)]
 pub struct Tools {
     pub tool: Tool,
+    pub pointer: String,
 }
 
 impl serde::Serialize for Tool {

@@ -8,4 +8,5 @@ pub enum CanvasEvent {
     DragEnd((Point, Point)),
     Click(Point),
     DeselectTool,
+    SelectTool,
 }
