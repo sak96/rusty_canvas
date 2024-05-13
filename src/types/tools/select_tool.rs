@@ -49,4 +49,9 @@ impl ToolAction for SelectTool {
             _ => None,
         }
     }
+
+    fn deselect(&mut self, tool_shape: &mut Option<Shape>, shapes: &mut Shapes) {
+        tool_shape.take();
+        shapes.selected_shapes.clear();
+    }
 }

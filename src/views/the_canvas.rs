@@ -36,8 +36,11 @@ impl EventHandler {
         }
     }
 
-    pub fn set_tool(&mut self, tool: &Tool) {
-        self.tool = tool.clone()
+    pub fn set_tool(&mut self, tool: &Tool, shapes: &mut Shapes) {
+        if self.tool.ne(tool) {
+            self.tool.deselect(&mut self.shape, shapes);
+            self.tool = tool.clone();
+        }
     }
 
     fn refresh_canvas(&self, shapes: &Shapes) {
@@ -153,9 +156,14 @@ pub fn the_canvas() -> Html {
     let current_tool = use_selector(|tools: &Tools| tools.tool.clone());
     {
         let event_handler = event_handler.clone();
-        use_effect_with(current_tool.clone(), move |tool| {
-            event_handler.borrow_mut().set_tool(tool.as_ref());
-        });
+        use_effect_with(
+            (current_tool.clone(), shapes_dispatch.clone()),
+            move |(tool, shapes_dispatch)| {
+                shapes_dispatch.reduce_mut(|shapes| {
+                    event_handler.borrow_mut().set_tool(tool.as_ref(), shapes);
+                })
+            },
+        );
     };
 
     html! {

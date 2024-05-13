@@ -41,4 +41,5 @@ pub trait ToolAction {
     fn button_icon(&self) -> &'static str;
     fn button_title(&self) -> &'static str;
     fn handle_event(&mut self, event: &Event, shapes: &mut Shapes) -> Option<Shape>;
+    fn deselect(&mut self, tool_shape: &mut Option<Shape>, shapes: &mut Shapes) {}
 }
