@@ -38,7 +38,8 @@ impl EventHandler {
 
     pub fn set_tool(&mut self, tool: &Tool, shapes: &mut Shapes) {
         if self.tool.ne(tool) {
-            self.tool.deselect(&mut self.shape, shapes);
+            self.tool
+                .handle_event(&Event::DeselectTool, &mut self.shape, shapes);
             self.tool = tool.clone();
         }
     }
@@ -97,7 +98,7 @@ impl EventHandler {
     pub fn handle_ptr_event(&mut self, event: PointerEvent, shapes: &mut Shapes) {
         let canvas = self.get_canvas();
         let position = Self::get_event_canvas_postion(&canvas, &event);
-        let event = match event.type_().as_str() {
+        let canvas_event = match event.type_().as_str() {
             "pointerdown" => {
                 canvas.set_pointer_capture(event.pointer_id()).unwrap();
                 Some(Event::PointerEventStart(position))
@@ -118,10 +119,15 @@ impl EventHandler {
             },
             _ => None,
         };
-        if let Some(event) = &event {
-            self.shape = self.tool.handle_event(event, shapes);
+        if let Some(canvas_event) = &canvas_event {
+            if self
+                .tool
+                .handle_event(canvas_event, &mut self.shape, shapes)
+            {
+                event.prevent_default();
+            }
         }
-        self.event = event;
+        self.event = canvas_event;
     }
 
     fn get_canvas(&self) -> HtmlCanvasElement {
