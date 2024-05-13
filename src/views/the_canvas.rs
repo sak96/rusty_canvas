@@ -107,12 +107,15 @@ impl EventHandler {
                 canvas.release_pointer_capture(event.pointer_id()).unwrap();
                 match self.event {
                     Some(CanvasEvent::PointerEventStart(_)) => Some(CanvasEvent::Click(position)),
-                    Some(CanvasEvent::DragMove((start, _))) => Some(CanvasEvent::DragEnd((start, position))),
+                    Some(CanvasEvent::DragMove((start, _))) => {
+                        Some(CanvasEvent::DragEnd((start, position)))
+                    }
                     _ => None,
                 }
             }
             "pointermove" => match self.event {
-                Some(CanvasEvent::PointerEventStart(start)) | Some(CanvasEvent::DragMove((start, _))) => {
+                Some(CanvasEvent::PointerEventStart(start))
+                | Some(CanvasEvent::DragMove((start, _))) => {
                     Some(CanvasEvent::DragMove((start, position)))
                 }
                 _ => Some(CanvasEvent::Hover(position)),
