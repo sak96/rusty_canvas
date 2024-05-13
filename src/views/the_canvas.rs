@@ -1,8 +1,6 @@
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
-use yew::NodeRef;
-use yew::PointerEvent;
 use yewdux::prelude::*;
 
 use crate::store::shapes::Shapes;
