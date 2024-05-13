@@ -191,7 +191,7 @@ pub fn the_canvas() -> Html {
 
     html! {
         <canvas
-            style={format!("flex: 1; cursor: {current_ptr}")}
+            style={format!("flex: 1; cursor: {current_ptr}; touch-action: none;")}
             ref={event_handler.borrow().canvas_ref.clone()}
             onpointerup={on_pointer_event.clone()}
             onpointerdown={on_pointer_event.clone()}
