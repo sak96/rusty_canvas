@@ -1,8 +1,6 @@
-use crate::{
-    store::tools::Tools,
-    types::tools::{Tool, ToolAction},
-    views::the_canvas::{EventHandler, TheCanvas},
-};
+use crate::store::tools::Tools;
+use crate::types::tools::{Tool, ToolAction};
+use crate::views::the_canvas::TheCanvas;
 use strum::IntoEnumIterator;
 use yew::prelude::*;
 use yewdux::prelude::*;
