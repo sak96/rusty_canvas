@@ -26,11 +26,17 @@ impl ToolAction for SelectTool {
         "Selection tool."
     }
 
-    fn handle_event(&mut self, event: &Event, shapes: &mut Shapes) -> Option<Shape> {
+    fn handle_event(
+        &mut self,
+        event: &Event,
+        tool_shape: &mut Option<Shape>,
+        shapes: &mut Shapes,
+    ) -> bool {
         match event {
             Event::PointerEventStart(_) => {
                 shapes.selected_shapes.clear();
-                None
+                tool_shape.take();
+                true
             }
             Event::DragMove((start, end)) => {
                 let selection = BBox::from_corner(start, end);
@@ -38,20 +44,22 @@ impl ToolAction for SelectTool {
                 let mut shape: Shape = Selection::default().into();
                 shape.resize_to_bbox(&selection);
                 shapes.version.increment();
-                Some(shape)
+                tool_shape.replace(shape);
+                true
             }
             Event::DragEnd((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 Self::update_selection(&selection, shapes);
                 shapes.version.increment();
-                None
+                tool_shape.take();
+                true
             }
-            _ => None,
+            Event::DeselectTool => {
+                tool_shape.take();
+                shapes.selected_shapes.clear();
+                true
+            }
+            _ => false,
         }
-    }
-
-    fn deselect(&mut self, tool_shape: &mut Option<Shape>, shapes: &mut Shapes) {
-        tool_shape.take();
-        shapes.selected_shapes.clear();
     }
 }

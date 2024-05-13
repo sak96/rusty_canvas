@@ -27,21 +27,28 @@ where
         ShapeToolDetails::button_title(&T::default())
     }
 
-    fn handle_event(&mut self, event: &Event, shapes: &mut Shapes) -> Option<Shape> {
+    fn handle_event(
+        &mut self,
+        event: &Event,
+        tool_shape: &mut Option<Shape>,
+        shapes: &mut Shapes,
+    ) -> bool {
         match event {
             Event::DragMove((start, end)) => {
                 let mut shape = T::default().into();
                 shape.resize_to_bbox(&BBox::from_corner(start, end));
                 shapes.version.increment();
-                Some(shape)
+                tool_shape.replace(shape);
+                true
             }
             Event::DragEnd((start, end)) => {
                 let mut shape = T::default().into();
                 shape.resize_to_bbox(&BBox::from_corner(start, end));
                 shapes.shapes.push(shape);
-                None
+                tool_shape.take();
+                true
             }
-            _ => None,
+            _ => false,
         }
     }
 }

@@ -7,4 +7,5 @@ pub enum Event {
     DragMove((Point, Point)),
     DragEnd((Point, Point)),
     Click(Point),
+    DeselectTool,
 }
