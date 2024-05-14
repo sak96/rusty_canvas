@@ -290,6 +290,6 @@ impl ShapeCache {
             })
             .or_insert_with(|| (shape.get_version().clone(), shape.get_drawable()))
             .1
-            .draw(&context);
+            .draw(context);
     }
 }

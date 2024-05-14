@@ -1,14 +1,11 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::str::FromStr;
-use yewdux::prelude::*;
 
 use crate::types::tools::Tool;
 
-#[derive(Default, Clone, PartialEq, Eq, Serialize, Deserialize, Store)]
-#[store(storage = "local", storage_tab_sync)]
+#[derive(Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Tools {
     pub tool: Tool,
-    pub pointer: String,
 }
 
 impl serde::Serialize for Tool {
