@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+
+use hashbrown::HashMap;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -241,16 +244,21 @@ impl Shape {
             version: Version::default(),
         }
     }
+
     pub fn get_id(&self) -> &Id {
         &self.id
+    }
+
+    pub fn get_version(&self) -> &Version {
+        &self.version
     }
 
     pub fn bbox(&self) -> BBox {
         self.bbox.clone()
     }
 
-    pub fn draw(&self, context: &CanvasRenderingContext2d) {
-        self.name.get_drawable(&self.bbox).draw(context);
+    pub fn get_drawable(&self) -> Drawable {
+        self.name.get_drawable(&self.bbox)
     }
 
     // pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
@@ -265,3 +273,23 @@ impl Shape {
 }
 
 impl Eq for Shape {}
+
+#[derive(Default)]
+pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
+
+impl ShapeCache {
+    pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
+        self.0
+            .borrow_mut()
+            .entry(shape.get_id().clone())
+            .and_modify(|(version, drawable)| {
+                if shape.version.ne(version) {
+                    *version = shape.get_version().clone();
+                    *drawable = shape.get_drawable();
+                }
+            })
+            .or_insert_with(|| (shape.get_version().clone(), shape.get_drawable()))
+            .1
+            .draw(&context);
+    }
+}
