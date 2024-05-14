@@ -6,15 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yew = { version = "0.21.0", features = ["csr"] }
-web-sys = { version = "0.3.69", features = ["HtmlCanvasElement", "CanvasRenderingContext2d", "DomRect"] }
-wasm-bindgen = "0.2.92"
-enum_dispatch = "0.3.13"
+yew = { version = "0.21", features = ["csr"] }
+web-sys = { version = "0.3", features = ["HtmlCanvasElement", "CanvasRenderingContext2d", "DomRect"] }
+wasm-bindgen = "0.2"
+enum_dispatch = "0.3"
 strum = "0.26"
 strum_macros = "0.26"
 yewdux = "0.10"
 serde = "1.0"
 blob-uuid = "0.5.0"
+hashbrown = "0.14"
 
 [profile.release]
 panic = 'abort' # less code to include into binary

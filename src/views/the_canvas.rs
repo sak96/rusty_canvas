@@ -6,7 +6,7 @@ use yewdux::prelude::*;
 use crate::store::shapes::Shapes;
 use crate::store::tools::Tools;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{Drawable, ShapeType};
+use crate::types::shapes::{Drawable, ShapeCache, ShapeType};
 use crate::types::tools::{Tool, ToolAction};
 
 pub struct EventHandler {
@@ -14,6 +14,7 @@ pub struct EventHandler {
     tool: Tool,
     event: Option<CanvasEvent>,
     shape: Option<Drawable>,
+    shape_cache: ShapeCache,
 }
 
 impl PartialEq for EventHandler {
@@ -31,6 +32,7 @@ impl EventHandler {
             tool: Tool::default(),
             event: Default::default(),
             shape: Default::default(),
+            shape_cache: Default::default(),
         }
     }
 
@@ -57,7 +59,7 @@ impl EventHandler {
         context.clear_rect(0.0, 0.0, canvas.width() as f64, canvas.height() as f64);
         let mut selections = vec![];
         for shape in &shapes.shapes {
-            shape.draw(&context);
+            self.shape_cache.draw_from_cache(shape, &context);
             if shapes.selected_shapes.contains(shape.get_id()) {
                 let mut padded_bbox = shape.bbox();
                 padded_bbox.add_padding(PADDING);
@@ -156,13 +158,13 @@ pub fn the_canvas() -> Html {
         let shapes = shapes.clone();
         let event_handler = event_handler.clone();
         Callback::from(move |_| {
-            event_handler.borrow().refresh_canvas(&shapes);
+            event_handler.borrow_mut().refresh_canvas(&shapes);
         })
     };
     {
         let event_handler = event_handler.clone();
         use_effect_with(shapes.clone(), move |_| {
-            event_handler.borrow().refresh_canvas(&shapes);
+            event_handler.borrow_mut().refresh_canvas(&shapes);
         });
     };
     let current_tool = use_selector(|tools: &Tools| tools.tool.clone());
