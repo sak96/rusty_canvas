@@ -6,14 +6,14 @@ use yewdux::prelude::*;
 use crate::store::shapes::Shapes;
 use crate::store::tools::Tools;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{Selection, Shape};
+use crate::types::shapes::{Drawable, ShapeType};
 use crate::types::tools::{Tool, ToolAction};
 
 pub struct EventHandler {
     canvas_ref: NodeRef,
     tool: Tool,
     event: Option<CanvasEvent>,
-    shape: Option<Shape>,
+    shape: Option<Drawable>,
 }
 
 impl PartialEq for EventHandler {
@@ -61,27 +61,19 @@ impl EventHandler {
             if shapes.selected_shapes.contains(shape.get_id()) {
                 let mut padded_bbox = shape.bbox();
                 padded_bbox.add_padding(PADDING);
-                let mut sel_shape: Shape = Selection::default().into();
-                sel_shape.resize_to_bbox(&padded_bbox);
-                selections.push(sel_shape);
+                selections.push(ShapeType::Selection.get_drawable(&padded_bbox));
             }
         }
         for shape in &selections {
             shape.draw(&context);
         }
-        match selections.split_first() {
-            Some((first, [])) => first.draw(&context),
-            Some((first, rest)) => {
-                let mut group = first.bbox();
-                for shape in rest {
-                    group.add_bbox(&shape.bbox());
-                    shape.draw(&context);
-                }
-                let mut sel_shape: Shape = Selection::default().into();
-                sel_shape.resize_to_bbox(&group);
-                sel_shape.draw(&context);
+        if let Some((first, rest)) = selections.split_first() {
+            let mut group = first.bbox();
+            for shape in rest {
+                group.add_bbox(&shape.bbox());
+                shape.draw(&context);
             }
-            None => {}
+            ShapeType::Selection.get_drawable(&group).draw(&context);
         }
         if let Some(shape) = &self.shape {
             shape.draw(&context);

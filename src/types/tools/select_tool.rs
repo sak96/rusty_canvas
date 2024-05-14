@@ -2,7 +2,7 @@ use super::ToolAction;
 use crate::store::shapes::Shapes;
 use crate::store::tools::Tools;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{BBox, Selection, Shape};
+use crate::types::shapes::{BBox, Drawable, ShapeType};
 
 #[derive(Default, Clone)]
 pub struct Select;
@@ -31,7 +31,7 @@ impl ToolAction for Select {
         &mut self,
         event: &CanvasEvent,
         tools: &mut Tools,
-        tool_shape: &mut Option<Shape>,
+        tool_shape: &mut Option<Drawable>,
         shapes: &mut Shapes,
     ) -> bool {
         match event {
@@ -43,10 +43,8 @@ impl ToolAction for Select {
             CanvasEvent::DragMove((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 Self::update_selection(&selection, shapes);
-                let mut shape: Shape = Selection::default().into();
-                shape.resize_to_bbox(&selection);
+                tool_shape.replace(ShapeType::Selection.get_drawable(&selection));
                 shapes.version.increment();
-                tool_shape.replace(shape);
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {

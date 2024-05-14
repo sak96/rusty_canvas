@@ -5,9 +5,10 @@ use super::ToolAction;
 use crate::store::shapes::Shapes;
 use crate::store::tools::Tools;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{BBox, Ellipse, Rectangle, Shape};
+use crate::types::shapes::{BBox, Drawable, Ellipse, Rectangle, Shape, ShapeType};
 
 pub trait ShapeToolDetails {
+    fn shape_type() -> ShapeType;
     fn button_icon(&self) -> &'static str;
     fn button_title(&self) -> &'static str;
 }
@@ -19,7 +20,7 @@ pub struct ShapeTool<T> {
 
 impl<T> ToolAction for ShapeTool<T>
 where
-    T: Into<Shape> + ShapeToolDetails + Default,
+    T: ShapeToolDetails + Default,
 {
     fn button_icon(&self) -> &'static str {
         ShapeToolDetails::button_icon(&T::default())
@@ -33,7 +34,7 @@ where
         &mut self,
         event: &CanvasEvent,
         tools: &mut Tools,
-        tool_shape: &mut Option<Shape>,
+        tool_shape: &mut Option<Drawable>,
         shapes: &mut Shapes,
     ) -> bool {
         match event {
@@ -46,18 +47,13 @@ where
                 false
             }
             CanvasEvent::DragMove((start, end)) => {
-                let mut shape = T::default().into();
-                shape.resize_to_bbox(&BBox::from_corner(start, end));
+                tool_shape.replace(T::shape_type().get_drawable(&BBox::from_corner(start, end)));
                 shapes.version.increment();
-                tools.pointer = "crosshair".into();
-                tool_shape.replace(shape);
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {
-                let mut shape = T::default().into();
-                shape.resize_to_bbox(&BBox::from_corner(start, end));
-                shapes.selected_shapes.clear();
-                shapes.selected_shapes.push(shape.get_id().clone());
+                let shape = Shape::new(&BBox::from_corner(start, end), T::shape_type());
+                shapes.selected_shapes = vec![shape.get_id().clone()];
                 shapes.shapes.push(shape);
                 tool_shape.take();
                 tools.tool = Select {}.into();

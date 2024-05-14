@@ -1,6 +1,3 @@
-use enum_dispatch::enum_dispatch;
-use std::str::FromStr;
-use strum_macros::{Display, EnumString};
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -61,19 +58,14 @@ impl BBox {
     }
 }
 
-#[enum_dispatch]
-trait Draw {
+pub type Drawable = Box<dyn Draw>;
+
+pub trait Draw {
+    fn new(bbox: &BBox) -> Self
+    where
+        Self: Sized;
     fn bbox(&self) -> BBox;
     fn draw(&self, context: &CanvasRenderingContext2d);
-    fn _resize_to_bbox(&mut self, bbox: &BBox);
-    fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
-        if &self.bbox() != bbox {
-            self._resize_to_bbox(bbox);
-            true
-        } else {
-            false
-        }
-    }
 }
 
 #[derive(Default, Clone)]
@@ -85,6 +77,15 @@ pub struct Rectangle {
 }
 
 impl Draw for Rectangle {
+    fn new(bbox: &BBox) -> Self {
+        Self {
+            left: bbox.left,
+            top: bbox.top,
+            width: bbox.width,
+            height: bbox.height,
+        }
+    }
+
     fn bbox(&self) -> BBox {
         BBox {
             left: self.left,
@@ -98,16 +99,13 @@ impl Draw for Rectangle {
         context.set_stroke_style(&JsValue::from_str("green"));
         context.stroke_rect(self.left, self.top, self.width, self.height);
     }
-
-    fn _resize_to_bbox(&mut self, bbox: &BBox) {
-        self.left = bbox.left;
-        self.top = bbox.top;
-        self.width = bbox.width;
-        self.height = bbox.height;
-    }
 }
 
 impl ShapeToolDetails for Rectangle {
+    fn shape_type() -> ShapeType {
+        ShapeType::Rectangle
+    }
+
     fn button_icon(&self) -> &'static str {
         "ti-square"
     }
@@ -121,6 +119,10 @@ impl ShapeToolDetails for Rectangle {
 pub struct Selection(Rectangle);
 
 impl Draw for Selection {
+    fn new(bbox: &BBox) -> Self {
+        Self(Rectangle::new(bbox))
+    }
+
     fn bbox(&self) -> BBox {
         self.0.bbox()
     }
@@ -131,10 +133,6 @@ impl Draw for Selection {
         dashes.push(&JsValue::from_f64(5.0));
         context.set_line_dash(&dashes).unwrap();
         context.stroke_rect(self.0.left, self.0.top, self.0.width, self.0.height);
-    }
-
-    fn _resize_to_bbox(&mut self, bbox: &BBox) {
-        self.0._resize_to_bbox(bbox);
     }
 }
 
@@ -147,6 +145,19 @@ pub struct Ellipse {
 }
 
 impl Draw for Ellipse {
+    fn new(bbox: &BBox) -> Self {
+        let radius_x = bbox.width / 2.0;
+        let radius_y = bbox.height / 2.0;
+        let center_x = bbox.left + radius_x;
+        let center_y = bbox.top + radius_y;
+        Self {
+            radius_x,
+            radius_y,
+            center_x,
+            center_y,
+        }
+    }
+
     fn bbox(&self) -> BBox {
         BBox {
             left: self.center_x - self.radius_x,
@@ -172,16 +183,13 @@ impl Draw for Ellipse {
             .unwrap();
         context.stroke();
     }
-
-    fn _resize_to_bbox(&mut self, bbox: &BBox) {
-        self.radius_x = bbox.width / 2.0;
-        self.radius_y = bbox.height / 2.0;
-        self.center_x = bbox.left + self.radius_x;
-        self.center_y = bbox.top + self.radius_y;
-    }
 }
 
 impl ShapeToolDetails for Ellipse {
+    fn shape_type() -> ShapeType {
+        ShapeType::Ellipse
+    }
+
     fn button_icon(&self) -> &'static str {
         "ti-circle"
     }
@@ -191,26 +199,29 @@ impl ShapeToolDetails for Ellipse {
     }
 }
 
-#[enum_dispatch(Draw)]
-#[derive(Clone, EnumString, Display)]
+#[derive(Default, Clone, Deserialize, Serialize)]
 #[non_exhaustive]
-pub enum DrawableShape {
-    Selection,
+pub enum ShapeType {
+    #[default]
     Rectangle,
     Ellipse,
+    Selection,
 }
-impl DrawableShape {
-    fn new(shape: &str, bbox: &BBox) -> Self {
-        let mut drawable = Self::from_str(shape).unwrap_or_else(|_| Rectangle::default().into());
-        drawable.resize_to_bbox(bbox);
-        drawable
+
+impl ShapeType {
+    pub fn get_drawable(&self, bbox: &BBox) -> Drawable {
+        match self {
+            Self::Ellipse => Box::new(Ellipse::new(bbox)),
+            Self::Selection => Box::new(Selection::new(bbox)),
+            Self::Rectangle => Box::new(Rectangle::new(bbox)),
+        }
     }
 }
 
 #[derive(Default, Clone, Deserialize, Serialize)]
 pub struct Shape {
     bbox: BBox,
-    shape: String,
+    drawable: ShapeType,
     id: Id,
     version: Version,
 }
@@ -221,22 +232,15 @@ impl PartialEq for Shape {
     }
 }
 
-impl<T> From<T> for Shape
-where
-    T: Into<DrawableShape>,
-{
-    fn from(value: T) -> Self {
-        let drawable: DrawableShape = value.into();
+impl Shape {
+    pub fn new(bbox: &BBox, drawable: ShapeType) -> Self {
         Self {
-            bbox: drawable.bbox(),
-            shape: drawable.to_string(),
+            bbox: bbox.clone(),
+            drawable,
             id: Id::default(),
             version: Version::default(),
         }
     }
-}
-
-impl Shape {
     pub fn get_id(&self) -> &Id {
         &self.id
     }
@@ -246,18 +250,18 @@ impl Shape {
     }
 
     pub fn draw(&self, context: &CanvasRenderingContext2d) {
-        DrawableShape::new(&self.shape, &self.bbox()).draw(context);
+        self.drawable.get_drawable(&self.bbox).draw(context);
     }
 
-    pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
-        if &self.bbox() != bbox {
-            self.bbox = bbox.clone();
-            self.version.increment();
-            true
-        } else {
-            false
-        }
-    }
+    // pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
+    //     if &self.bbox() != bbox {
+    //         self.bbox = bbox.clone();
+    //         self.version.increment();
+    //         true
+    //     } else {
+    //         false
+    //     }
+    // }
 }
 
 impl Eq for Shape {}

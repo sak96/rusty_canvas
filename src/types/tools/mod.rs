@@ -1,16 +1,16 @@
 use enum_dispatch::enum_dispatch;
-
-use crate::store::{shapes::Shapes, tools::Tools};
-use crate::types::events::CanvasEvent;
-use crate::types::shapes::Shape;
+use strum_macros::{Display, EnumIter, EnumString};
 
 pub mod select_tool;
 pub mod shape_tool;
 
+use crate::store::{shapes::Shapes, tools::Tools};
+use crate::types::events::CanvasEvent;
+
 use select_tool::Select;
 use shape_tool::{EllipseShape, RectangleShape};
 
-use strum_macros::{Display, EnumIter, EnumString};
+use crate::types::shapes::Drawable;
 
 #[enum_dispatch(ToolAction)]
 #[derive(EnumString, EnumIter, Display, Clone)]
@@ -43,7 +43,7 @@ pub trait ToolAction {
         &mut self,
         event: &CanvasEvent,
         tools: &mut Tools,
-        tool_shape: &mut Option<Shape>,
+        tool_shape: &mut Option<Drawable>,
         shapes: &mut Shapes,
     ) -> bool;
 }
