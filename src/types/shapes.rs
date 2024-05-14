@@ -221,7 +221,7 @@ impl ShapeType {
 #[derive(Default, Clone, Deserialize, Serialize)]
 pub struct Shape {
     bbox: BBox,
-    drawable: ShapeType,
+    name: ShapeType,
     id: Id,
     version: Version,
 }
@@ -236,7 +236,7 @@ impl Shape {
     pub fn new(bbox: &BBox, drawable: ShapeType) -> Self {
         Self {
             bbox: bbox.clone(),
-            drawable,
+            name: drawable,
             id: Id::default(),
             version: Version::default(),
         }
@@ -250,7 +250,7 @@ impl Shape {
     }
 
     pub fn draw(&self, context: &CanvasRenderingContext2d) {
-        self.drawable.get_drawable(&self.bbox).draw(context);
+        self.name.get_drawable(&self.bbox).draw(context);
     }
 
     // pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
