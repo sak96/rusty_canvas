@@ -2,8 +2,7 @@ use std::marker::PhantomData;
 
 use super::select_tool::Select;
 use super::ToolAction;
-use crate::store::shapes::Shapes;
-use crate::store::tools::Tools;
+use crate::store::AppState;
 use crate::types::events::CanvasEvent;
 use crate::types::shapes::{BBox, Drawable, Ellipse, Rectangle, Shape, ShapeType};
 
@@ -33,30 +32,29 @@ where
     fn handle_event(
         &mut self,
         event: &CanvasEvent,
-        tools: &mut Tools,
         tool_shape: &mut Option<Drawable>,
-        shapes: &mut Shapes,
+        app_state: &mut AppState,
     ) -> bool {
         match event {
             CanvasEvent::SelectTool => {
-                tools.pointer = "crosshair".into();
-                false
+                app_state.set_pointer("crosshair");
+                true
             }
             CanvasEvent::DeselectTool => {
-                tools.pointer = "default".into();
-                false
+                app_state.set_pointer("default");
+                true
             }
             CanvasEvent::DragMove((start, end)) => {
                 tool_shape.replace(T::shape_type().get_drawable(&BBox::from_corner(start, end)));
-                shapes.version.increment();
+                app_state.set_redraw();
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {
                 let shape = Shape::new(&BBox::from_corner(start, end), T::shape_type());
-                shapes.selected_shapes = vec![shape.get_id().clone()];
-                shapes.shapes.push(shape);
+                app_state.replace_selected(vec![shape.get_id().clone()]);
+                app_state.add_shape(shape);
                 tool_shape.take();
-                tools.tool = Select {}.into();
+                app_state.set_tool(Select {}.into());
                 true
             }
             _ => false,

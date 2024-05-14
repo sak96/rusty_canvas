@@ -4,7 +4,7 @@ use strum_macros::{Display, EnumIter, EnumString};
 pub mod select_tool;
 pub mod shape_tool;
 
-use crate::store::{shapes::Shapes, tools::Tools};
+use crate::store::AppState;
 use crate::types::events::CanvasEvent;
 
 use select_tool::Select;
@@ -42,8 +42,7 @@ pub trait ToolAction {
     fn handle_event(
         &mut self,
         event: &CanvasEvent,
-        tools: &mut Tools,
         tool_shape: &mut Option<Drawable>,
-        shapes: &mut Shapes,
+        app_state: &mut AppState,
     ) -> bool;
 }

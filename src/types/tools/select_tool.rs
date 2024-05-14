@@ -1,20 +1,21 @@
 use super::ToolAction;
 use crate::store::shapes::Shapes;
-use crate::store::tools::Tools;
+use crate::store::AppState;
 use crate::types::events::CanvasEvent;
+use crate::types::ids::Id;
 use crate::types::shapes::{BBox, Drawable, ShapeType};
 
 #[derive(Default, Clone)]
 pub struct Select;
 
 impl Select {
-    fn update_selection(selection: &BBox, shapes: &mut Shapes) {
-        shapes.selected_shapes.clear();
-        for shape in &shapes.shapes {
-            if shape.bbox().in_(selection) {
-                shapes.selected_shapes.push(shape.get_id().clone());
-            }
-        }
+    fn get_selected(selection: &BBox, shapes: &Shapes) -> Vec<Id> {
+        shapes
+            .shapes
+            .iter()
+            .filter(|shape| shape.bbox().in_(selection))
+            .map(|shape| shape.get_id().clone())
+            .collect()
     }
 }
 
@@ -30,34 +31,31 @@ impl ToolAction for Select {
     fn handle_event(
         &mut self,
         event: &CanvasEvent,
-        tools: &mut Tools,
         tool_shape: &mut Option<Drawable>,
-        shapes: &mut Shapes,
+        app_state: &mut AppState,
     ) -> bool {
         match event {
             CanvasEvent::PointerEventStart(_) => {
-                shapes.selected_shapes.clear();
+                app_state.replace_selected(vec![]);
                 tool_shape.take();
                 true
             }
             CanvasEvent::DragMove((start, end)) => {
                 let selection = BBox::from_corner(start, end);
-                Self::update_selection(&selection, shapes);
+                app_state.replace_selected(Self::get_selected(&selection, app_state.get_shapes()));
                 tool_shape.replace(ShapeType::Selection.get_drawable(&selection));
-                shapes.version.increment();
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {
                 let selection = BBox::from_corner(start, end);
-                Self::update_selection(&selection, shapes);
-                shapes.version.increment();
+                app_state.replace_selected(Self::get_selected(&selection, app_state.get_shapes()));
                 tool_shape.take();
                 true
             }
             CanvasEvent::DeselectTool => {
                 tool_shape.take();
-                shapes.selected_shapes.clear();
-                tools.pointer = "default".into();
+                app_state.replace_selected(vec![]);
+                app_state.set_pointer("default");
                 true
             }
             _ => false,
