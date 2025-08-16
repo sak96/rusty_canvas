@@ -99,7 +99,7 @@ impl Draw for Rectangle {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style(&JsValue::from_str("green"));
+        context.set_stroke_style_str("green");
         context.stroke_rect(self.left, self.top, self.width, self.height);
     }
 }
@@ -131,7 +131,7 @@ impl Draw for Selection {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style(&JsValue::from_str("blue"));
+        context.set_stroke_style_str("blue");
         let dashes = web_sys::js_sys::Array::new();
         dashes.push(&JsValue::from_f64(5.0));
         context.set_line_dash(&dashes).unwrap();
@@ -171,7 +171,7 @@ impl Draw for Ellipse {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style(&JsValue::from_str("red"));
+        context.set_stroke_style_str("red");
         context.begin_path();
         context
             .ellipse(
