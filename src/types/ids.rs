@@ -5,6 +5,6 @@ pub struct Id(String);
 
 impl Default for Id {
     fn default() -> Self {
-        Self(blob_uuid::random_blob())
+        Self(uuid::Uuid::new_v4().to_string())
     }
 }
