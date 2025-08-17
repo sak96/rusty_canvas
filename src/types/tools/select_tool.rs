@@ -13,7 +13,7 @@ impl Select {
         shapes
             .shapes
             .iter()
-            .filter(|shape| shape.bbox().in_(selection))
+            .filter(|shape| shape.isin(selection))
             .map(|shape| shape.get_id().clone())
             .collect()
     }
@@ -21,7 +21,7 @@ impl Select {
 
 impl ToolAction for Select {
     fn button_icon(&self) -> &'static str {
-        "ti-marquee"
+        "ti-marquee-2"
     }
 
     fn button_title(&self) -> &'static str {
