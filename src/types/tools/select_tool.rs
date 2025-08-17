@@ -1,6 +1,6 @@
 use super::ToolAction;
-use crate::store::shapes::Shapes;
 use crate::store::AppState;
+use crate::store::shapes::Shapes;
 use crate::types::events::CanvasEvent;
 use crate::types::ids::Id;
 use crate::types::shapes::{BBox, Drawable, ShapeType};

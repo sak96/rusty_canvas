@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use super::select_tool::Select;
 use super::ToolAction;
+use super::select_tool::Select;
 use crate::store::AppState;
 use crate::types::events::CanvasEvent;
 use crate::types::shapes::{BBox, Drawable, Ellipse, Rectangle, Shape, ShapeType};

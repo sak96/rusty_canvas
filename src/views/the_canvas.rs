@@ -3,8 +3,8 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
-use crate::store::shapes::Shapes;
 use crate::store::AppState;
+use crate::store::shapes::Shapes;
 use crate::types::events::CanvasEvent;
 use crate::types::shapes::{Drawable, ShapeCache, ShapeType};
 use crate::types::tools::{Tool, ToolAction};
