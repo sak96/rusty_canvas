@@ -11,6 +11,7 @@ pub enum CanvasEvent {
     /// currently not used any where
     #[allow(dead_code)]
     Click(Point),
+    KeyPress(String),
     DeselectTool,
     SelectTool,
 }

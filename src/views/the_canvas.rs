@@ -91,6 +91,16 @@ impl EventHandler {
         (x, y)
     }
 
+    pub fn handle_keyboard_event(&mut self, dispatch: Dispatch<AppState>, event: KeyboardEvent) {
+        let canvas_event = CanvasEvent::KeyPress(event.key());
+        dispatch.reduce_mut(|app| {
+            if self.tool.handle_event(&canvas_event, &mut self.shape, app) {
+                event.prevent_default();
+            }
+        });
+        self.event = Some(canvas_event);
+    }
+
     pub fn handle_ptr_event(&mut self, dispatch: Dispatch<AppState>, event: PointerEvent) {
         let canvas = self.get_canvas();
         let position = Self::get_event_canvas_postion(&canvas, &event);
@@ -151,7 +161,11 @@ pub fn the_canvas() -> Html {
     let on_pointer_event = {
         let event_handler = event_handler.clone();
         let dispatch = dispatch.clone();
-        Callback::from(move |event| {
+        Callback::from(move |event: PointerEvent| {
+            // Focus canvas on mouse events; required with tabindex for key events to work
+            if let Some(canvas) = canvas_ref.cast::<HtmlCanvasElement>() {
+                let _ = canvas.focus();
+            }
             event_handler
                 .borrow_mut()
                 .handle_ptr_event(dispatch.clone(), event)
@@ -162,6 +176,16 @@ pub fn the_canvas() -> Html {
         let event_handler = event_handler.clone();
         Callback::from(move |_| {
             event_handler.borrow_mut().refresh_canvas(&shapes);
+        })
+    };
+
+    let on_key_down = {
+        let event_handler = event_handler.clone();
+        let dispatch = dispatch.clone();
+        Callback::from(move |event: KeyboardEvent| {
+            event_handler
+                .borrow_mut()
+                .handle_keyboard_event(dispatch.clone(), event);
         })
     };
 
@@ -183,6 +207,8 @@ pub fn the_canvas() -> Html {
         <canvas
             style={format!("flex: 1; cursor: {current_ptr}; touch-action: none;")}
             ref={event_handler.borrow().canvas_ref.clone()}
+            tabindex="0"
+            onkeydown={on_key_down}
             onpointerup={on_pointer_event.clone()}
             onpointerdown={on_pointer_event.clone()}
             onpointermove={on_pointer_event.clone()}

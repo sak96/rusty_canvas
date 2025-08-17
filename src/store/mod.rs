@@ -36,6 +36,10 @@ impl AppState {
         &self.shapes
     }
 
+    pub fn get_selected(&mut self) -> &[Id] {
+        &self.shapes.selected_shapes
+    }
+
     pub fn replace_selected(&mut self, new_shapes: Vec<Id>) {
         self.shapes.selected_shapes = new_shapes;
         self.shapes.version.increment();

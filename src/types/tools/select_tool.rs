@@ -58,6 +58,16 @@ impl ToolAction for Select {
                 app_state.set_pointer("default");
                 true
             }
+            CanvasEvent::KeyPress(key) => {
+                let mut changed = false;
+                if key.eq(&"Delete") {
+                    let selected_id = app_state.get_selected().to_vec();
+                    app_state.replace_selected(vec![]);
+                    changed = !selected_id.is_empty();
+                    app_state.remove_shapes(selected_id);
+                }
+                changed
+            }
             _ => false,
         }
     }
