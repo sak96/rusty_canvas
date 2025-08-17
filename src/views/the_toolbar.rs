@@ -33,6 +33,14 @@ pub fn the_toolbar() -> Html {
                 </BaseButton>
             }}).collect::<Html>()
         }}
+        <BaseButton
+            title="Source Code"
+            onclick={move |_| {
+                let window = web_sys::window().unwrap();
+                window.open_with_url_and_target("https://github.com/sak96/rusty_canvas", "_blank").unwrap();
+            }}>
+            <i class={classes!("ti", "ti-brand-git")} />
+        </BaseButton>
         </div>
     }
 }
