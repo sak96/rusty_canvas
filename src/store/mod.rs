@@ -41,6 +41,16 @@ impl AppState {
         self.shapes.version.increment();
     }
 
+    pub fn remove_shapes(&mut self, shapes: Vec<Id>) {
+        self.shapes.shapes = self
+            .shapes
+            .shapes
+            .drain(..)
+            .filter(|x| !shapes.contains(x.get_id()))
+            .collect();
+        self.shapes.version.increment();
+    }
+
     pub fn add_shape(&mut self, shape: Shape) {
         self.shapes.shapes.push(shape);
         self.shapes.version.increment();

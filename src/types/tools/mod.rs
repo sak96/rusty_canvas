@@ -1,12 +1,14 @@
 use enum_dispatch::enum_dispatch;
 use strum_macros::{Display, EnumIter, EnumString};
 
+pub mod erase_tool;
 pub mod select_tool;
 pub mod shape_tool;
 
 use crate::store::AppState;
 use crate::types::events::CanvasEvent;
 
+use erase_tool::Erase;
 use select_tool::Select;
 use shape_tool::{EllipseShape, RectangleShape};
 
@@ -18,6 +20,7 @@ pub enum Tool {
     Select,
     RectangleShape,
     EllipseShape,
+    Erase,
 }
 
 impl Default for Tool {

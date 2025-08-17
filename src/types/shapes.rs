@@ -6,6 +6,7 @@ use web_sys::CanvasRenderingContext2d;
 
 use serde::{Deserialize, Serialize};
 
+use crate::types::events::Point;
 use crate::types::ids::Id;
 use crate::types::tools::shape_tool::ShapeToolDetails;
 use crate::types::version::Version;
@@ -44,6 +45,14 @@ impl BBox {
             && self.bottom() <= bbox.bottom()
     }
 
+    pub fn contains(&self, point: &Point, margin: f64) -> bool {
+        let (x, y) = *point;
+        self.top <= y + margin
+            && y - margin <= self.bottom()
+            && self.left <= x + margin
+            && x - margin <= self.right()
+    }
+
     pub fn add_padding(&mut self, padding: f64) {
         self.left -= padding;
         self.top -= padding;
@@ -69,6 +78,12 @@ pub trait Draw {
         Self: Sized;
     fn bbox(&self) -> BBox;
     fn draw(&self, context: &CanvasRenderingContext2d);
+    fn isin(&self, bbox: &BBox) -> bool {
+        self.bbox().in_(bbox)
+    }
+    fn contains(&self, point: &Point, margin: f64) -> bool {
+        self.bbox().contains(point, margin)
+    }
 }
 
 #[derive(Default, Clone)]
@@ -186,6 +201,17 @@ impl Draw for Ellipse {
             .unwrap();
         context.stroke();
     }
+
+    fn contains(&self, point: &Point, margin: f64) -> bool {
+        let dx = point.0 - self.center_x;
+        let dy = point.1 - self.center_y;
+        let rx = self.radius_x + margin;
+        let ry = self.radius_y + margin;
+        if rx <= 0.0 || ry <= 0.0 {
+            return false;
+        }
+        (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.0
+    }
 }
 
 impl ShapeToolDetails for Ellipse {
@@ -259,6 +285,14 @@ impl Shape {
 
     pub fn get_drawable(&self) -> Drawable {
         self.name.get_drawable(&self.bbox)
+    }
+
+    pub fn isin(&self, bbox: &BBox) -> bool {
+        self.get_drawable().isin(bbox)
+    }
+
+    pub fn contains(&self, point: &Point, margin: f64) -> bool {
+        self.get_drawable().contains(point, margin)
     }
 
     // pub fn resize_to_bbox(&mut self, bbox: &BBox) -> bool {
