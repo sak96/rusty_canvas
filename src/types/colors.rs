@@ -14,7 +14,7 @@ pub enum Color {
 #[derive(EnumString, EnumIter, Display, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum BackgroundColor {
     Magenta,
-    Blue,
+    LightBlue,
     Cyan,
     Yellow,
 }

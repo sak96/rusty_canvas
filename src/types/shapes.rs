@@ -340,14 +340,14 @@ impl ShapeCache {
             })
             .or_insert_with(|| (shape.get_version().clone(), shape.get_drawable()))
             .1;
-        context.set_stroke_style_str(&shape.color.to_string());
-        entry.draw(context);
-        context.set_line_width(3.0);
-        context.stroke();
         if let Some(ref color) = shape.bg_color {
             context.set_fill_style_str(&color.to_string());
             entry.draw(context);
             context.fill();
         }
+        context.set_stroke_style_str(&shape.color.to_string());
+        context.set_line_width(1.5);
+        entry.draw(context);
+        context.stroke();
     }
 }
