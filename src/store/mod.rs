@@ -8,12 +8,24 @@ use self::shapes::Shapes;
 pub mod shapes;
 pub mod tools;
 
-#[derive(Default, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
 #[store(storage = "local", storage_tab_sync)]
 pub struct AppState {
     shapes: Shapes,
     tools: tools::Tools,
     pointer: String,
+    color: String,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            color: "black".into(),
+            tools: Default::default(),
+            pointer: Default::default(),
+            shapes: Default::default(),
+        }
+    }
 }
 
 impl AppState {
@@ -26,6 +38,14 @@ impl AppState {
 
     pub fn get_tool(&self) -> &Tool {
         &self.tools.tool
+    }
+
+    pub fn get_color(&self) -> &String {
+        &self.color
+    }
+
+    pub fn set_color(&mut self, color: &str) {
+        self.color = color.to_string()
     }
 
     pub fn set_tool(&mut self, tool: Tool) {
@@ -57,6 +77,16 @@ impl AppState {
 
     pub fn add_shape(&mut self, shape: Shape) {
         self.shapes.shapes.push(shape);
+        self.shapes.version.increment();
+    }
+
+    pub fn modify_selected(&mut self, modification: impl Fn(&mut Shape)) {
+        let shapes = self.shapes.selected_shapes.to_vec();
+        self.shapes
+            .shapes
+            .iter_mut()
+            .filter(|x| shapes.contains(x.get_id()))
+            .for_each(modification);
         self.shapes.version.increment();
     }
 

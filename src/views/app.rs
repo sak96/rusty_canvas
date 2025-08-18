@@ -1,4 +1,5 @@
 use crate::views::the_canvas::TheCanvas;
+use crate::views::the_sidebar::TheSidebar;
 use crate::views::the_toolbar::TheToolbar;
 use yew::prelude::*;
 
@@ -8,6 +9,7 @@ pub fn app() -> Html {
         <div style="min-height: 100vh; display: flex;">
             <TheToolbar />
             <TheCanvas />
+            <TheSidebar />
         </div>
     }
 }

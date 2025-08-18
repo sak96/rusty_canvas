@@ -114,7 +114,6 @@ impl Draw for Rectangle {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style_str("green");
         context.stroke_rect(self.left, self.top, self.width, self.height);
     }
 }
@@ -186,7 +185,6 @@ impl Draw for Ellipse {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style_str("red");
         context.begin_path();
         context
             .ellipse(
@@ -251,6 +249,7 @@ impl ShapeType {
 pub struct Shape {
     bbox: BBox,
     name: ShapeType,
+    color: String,
     id: Id,
     version: Version,
 }
@@ -262,13 +261,18 @@ impl PartialEq for Shape {
 }
 
 impl Shape {
-    pub fn new(bbox: &BBox, drawable: ShapeType) -> Self {
+    pub fn new(bbox: &BBox, drawable: ShapeType, color: &str) -> Self {
         Self {
             bbox: bbox.clone(),
             name: drawable,
             id: Id::default(),
             version: Version::default(),
+            color: color.into(),
         }
+    }
+    pub fn set_color(&mut self, color: &str) {
+        web_sys::console::log_1(&color.to_string().into());
+        self.color = color.to_string()
     }
 
     pub fn get_id(&self) -> &Id {
@@ -313,6 +317,7 @@ pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
 
 impl ShapeCache {
     pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
+        context.set_stroke_style_str(&shape.color);
         self.0
             .borrow_mut()
             .entry(shape.get_id().clone())

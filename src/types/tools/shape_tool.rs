@@ -50,7 +50,11 @@ where
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {
-                let shape = Shape::new(&BBox::from_corner(start, end), T::shape_type());
+                let shape = Shape::new(
+                    &BBox::from_corner(start, end),
+                    T::shape_type(),
+                    app_state.get_color(),
+                );
                 app_state.replace_selected(vec![shape.get_id().clone()]);
                 app_state.add_shape(shape);
                 tool_shape.take();
