@@ -4,6 +4,13 @@ Drawing canvas app written in Rust.
 [Demo Link](https://sak96.github.io/rusty_canvas/).
 
 
+# Development usage.
+
+```bash
+cargo install trunk
+trunk serve
+```
+
 # Road Map
 
 - [x] draw rectangle
