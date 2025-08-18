@@ -1,7 +1,12 @@
 use serde::{Deserialize, Serialize};
 use yewdux::prelude::*;
 
-use crate::types::{colors::Color, ids::Id, shapes::Shape, tools::Tool};
+use crate::types::{
+    colors::{BackgroundColor, Color},
+    ids::Id,
+    shapes::Shape,
+    tools::Tool,
+};
 
 use self::shapes::Shapes;
 
@@ -15,6 +20,7 @@ pub struct AppState {
     tools: tools::Tools,
     pointer: String,
     color: Color,
+    bg_color: Option<BackgroundColor>,
 }
 
 impl AppState {
@@ -35,6 +41,14 @@ impl AppState {
 
     pub fn set_color(&mut self, color: Color) {
         self.color = color.clone();
+    }
+
+    pub fn set_bg_color(&mut self, bg_color: Option<BackgroundColor>) {
+        self.bg_color = bg_color.clone();
+    }
+
+    pub fn get_bg_color(&self) -> &Option<BackgroundColor> {
+        &self.bg_color
     }
 
     pub fn set_tool(&mut self, tool: Tool) {

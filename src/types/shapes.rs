@@ -6,7 +6,7 @@ use web_sys::CanvasRenderingContext2d;
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::colors::Color;
+use crate::types::colors::{BackgroundColor, Color};
 use crate::types::events::Point;
 use crate::types::ids::Id;
 use crate::types::tools::shape_tool::ShapeToolDetails;
@@ -115,7 +115,7 @@ impl Draw for Rectangle {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.stroke_rect(self.left, self.top, self.width, self.height);
+        context.rect(self.left, self.top, self.width, self.height);
     }
 }
 
@@ -253,6 +253,7 @@ pub struct Shape {
     id: Id,
     version: Version,
     color: Color,
+    bg_color: Option<BackgroundColor>,
 }
 
 impl PartialEq for Shape {
@@ -262,18 +263,28 @@ impl PartialEq for Shape {
 }
 
 impl Shape {
-    pub fn new(bbox: &BBox, drawable: ShapeType, color: Color) -> Self {
+    pub fn new(
+        bbox: &BBox,
+        drawable: ShapeType,
+        color: Color,
+        bg_color: Option<BackgroundColor>,
+    ) -> Self {
         Self {
             bbox: bbox.clone(),
             name: drawable,
             id: Id::default(),
             version: Version::default(),
             color,
+            bg_color,
         }
     }
+
     pub fn set_color(&mut self, color: Color) {
-        web_sys::console::log_1(&color.to_string().into());
         self.color = color.clone();
+    }
+
+    pub fn set_bg_color(&mut self, bg_color: Option<BackgroundColor>) {
+        self.bg_color = bg_color.clone();
     }
 
     pub fn get_id(&self) -> &Id {
@@ -318,9 +329,8 @@ pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
 
 impl ShapeCache {
     pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style_str(&shape.color.to_string());
-        self.0
-            .borrow_mut()
+        let mut binding = self.0.borrow_mut();
+        let entry = &binding
             .entry(shape.get_id().clone())
             .and_modify(|(version, drawable)| {
                 if shape.version.ne(version) {
@@ -329,7 +339,15 @@ impl ShapeCache {
                 }
             })
             .or_insert_with(|| (shape.get_version().clone(), shape.get_drawable()))
-            .1
-            .draw(context);
+            .1;
+        context.set_stroke_style_str(&shape.color.to_string());
+        entry.draw(context);
+        context.set_line_width(3.0);
+        context.stroke();
+        if let Some(ref color) = shape.bg_color {
+            context.set_fill_style_str(&color.to_string());
+            entry.draw(context);
+            context.fill();
+        }
     }
 }
