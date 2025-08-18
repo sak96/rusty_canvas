@@ -54,6 +54,7 @@ where
                     &BBox::from_corner(start, end),
                     T::shape_type(),
                     app_state.get_color().clone(),
+                    app_state.get_bg_color().clone(),
                 );
                 app_state.replace_selected(vec![shape.get_id().clone()]);
                 app_state.add_shape(shape);
