@@ -6,6 +6,7 @@ use web_sys::CanvasRenderingContext2d;
 
 use serde::{Deserialize, Serialize};
 
+use crate::types::colors::Color;
 use crate::types::events::Point;
 use crate::types::ids::Id;
 use crate::types::tools::shape_tool::ShapeToolDetails;
@@ -249,9 +250,9 @@ impl ShapeType {
 pub struct Shape {
     bbox: BBox,
     name: ShapeType,
-    color: String,
     id: Id,
     version: Version,
+    color: Color,
 }
 
 impl PartialEq for Shape {
@@ -261,18 +262,18 @@ impl PartialEq for Shape {
 }
 
 impl Shape {
-    pub fn new(bbox: &BBox, drawable: ShapeType, color: &str) -> Self {
+    pub fn new(bbox: &BBox, drawable: ShapeType, color: Color) -> Self {
         Self {
             bbox: bbox.clone(),
             name: drawable,
             id: Id::default(),
             version: Version::default(),
-            color: color.into(),
+            color,
         }
     }
-    pub fn set_color(&mut self, color: &str) {
+    pub fn set_color(&mut self, color: Color) {
         web_sys::console::log_1(&color.to_string().into());
-        self.color = color.to_string()
+        self.color = color.clone();
     }
 
     pub fn get_id(&self) -> &Id {
@@ -317,7 +318,7 @@ pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
 
 impl ShapeCache {
     pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
-        context.set_stroke_style_str(&shape.color);
+        context.set_stroke_style_str(&shape.color.to_string());
         self.0
             .borrow_mut()
             .entry(shape.get_id().clone())

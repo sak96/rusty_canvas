@@ -1,3 +1,4 @@
+pub mod colors;
 pub mod events;
 pub mod ids;
 pub mod shapes;
