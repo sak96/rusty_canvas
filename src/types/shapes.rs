@@ -330,6 +330,8 @@ pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
 impl ShapeCache {
     pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
         let mut binding = self.0.borrow_mut();
+        context.save();
+        context.begin_path();
         let entry = &binding
             .entry(shape.get_id().clone())
             .and_modify(|(version, drawable)| {
@@ -349,5 +351,7 @@ impl ShapeCache {
         context.set_line_width(1.5);
         entry.draw(context);
         context.stroke();
+        context.close_path();
+        context.restore();
     }
 }
