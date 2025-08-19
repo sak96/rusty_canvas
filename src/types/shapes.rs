@@ -146,11 +146,13 @@ impl Draw for Selection {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
+        context.save();
         context.set_stroke_style_str("blue");
         let dashes = web_sys::js_sys::Array::new();
         dashes.push(&JsValue::from_f64(5.0));
         context.set_line_dash(&dashes).unwrap();
         context.stroke_rect(self.0.left, self.0.top, self.0.width, self.0.height);
+        context.restore();
     }
 }
 
@@ -186,7 +188,6 @@ impl Draw for Ellipse {
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
-        context.begin_path();
         context
             .ellipse(
                 self.center_x,
@@ -198,7 +199,6 @@ impl Draw for Ellipse {
                 std::f64::consts::TAU,
             )
             .unwrap();
-        context.stroke();
     }
 
     fn contains(&self, point: &Point, margin: f64) -> bool {
@@ -329,6 +329,8 @@ pub struct ShapeCache(RefCell<HashMap<Id, (Version, Drawable)>>);
 
 impl ShapeCache {
     pub fn draw_from_cache(&self, shape: &Shape, context: &CanvasRenderingContext2d) {
+        context.save();
+        context.begin_path();
         let mut binding = self.0.borrow_mut();
         let entry = &binding
             .entry(shape.get_id().clone())
@@ -341,13 +343,14 @@ impl ShapeCache {
             .or_insert_with(|| (shape.get_version().clone(), shape.get_drawable()))
             .1;
         context.set_stroke_style_str(&shape.color.to_string());
+        context.set_line_width(1.5);
         entry.draw(context);
-        context.set_line_width(3.0);
         context.stroke();
         if let Some(ref color) = shape.bg_color {
             context.set_fill_style_str(&color.to_string());
-            entry.draw(context);
             context.fill();
         }
+        context.close_path();
+        context.restore();
     }
 }
