@@ -1,4 +1,4 @@
-use wasm_bindgen::JsCast;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
@@ -6,7 +6,7 @@ use yewdux::prelude::*;
 use crate::store::AppState;
 use crate::store::shapes::Shapes;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{Drawable, ShapeCache, ShapeType};
+use crate::types::shapes::{Draw, Drawable, Selection, ShapeCache};
 use crate::types::tools::{Tool, ToolAction};
 
 pub struct EventHandler {
@@ -65,7 +65,7 @@ impl EventHandler {
             if shapes.selected_shapes.contains(shape.get_id()) {
                 let mut padded_bbox = shape.bbox();
                 padded_bbox.add_padding(PADDING);
-                selections.push(ShapeType::Selection.get_drawable(&padded_bbox));
+                selections.push(Box::new(Selection::new(&padded_bbox)));
             }
         }
         for shape in &selections {
@@ -77,10 +77,20 @@ impl EventHandler {
                 group.add_bbox(&shape.bbox());
                 shape.draw(&context);
             }
-            ShapeType::Selection.get_drawable(&group).draw(&context);
+            Selection::new(&group).draw(&context);
         }
         if let Some(shape) = &self.shape {
+            context.save();
+            context.begin_path();
+            let dashes = web_sys::js_sys::Array::new();
+            dashes.push(&JsValue::from_f64(5.0));
+            context.set_line_dash(&dashes).unwrap();
+            context.set_stroke_style_str("gray");
+            context.set_line_width(1.5);
             shape.draw(&context);
+            context.stroke();
+            context.close_path();
+            context.restore();
         }
     }
 

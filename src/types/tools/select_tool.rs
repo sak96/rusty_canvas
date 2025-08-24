@@ -3,7 +3,7 @@ use crate::store::AppState;
 use crate::store::shapes::Shapes;
 use crate::types::events::CanvasEvent;
 use crate::types::ids::Id;
-use crate::types::shapes::{BBox, Drawable, ShapeType};
+use crate::types::shapes::{BBox, Draw, Drawable, Selection};
 
 #[derive(Default, Clone)]
 pub struct Select;
@@ -43,7 +43,7 @@ impl ToolAction for Select {
             CanvasEvent::DragMove((start, end)) => {
                 let selection = BBox::from_corner(start, end);
                 app_state.replace_selected(Self::get_selected(&selection, app_state.get_shapes()));
-                tool_shape.replace(ShapeType::Selection.get_drawable(&selection));
+                tool_shape.replace(Box::new(Selection::new(&selection)));
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {

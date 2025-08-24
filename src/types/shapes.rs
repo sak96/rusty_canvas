@@ -73,7 +73,10 @@ impl BBox {
 
 pub type Drawable = Box<dyn Draw>;
 
-pub trait Draw {
+pub trait Draw
+where
+    Self: 'static,
+{
     fn new(bbox: &BBox) -> Self
     where
         Self: Sized;
@@ -233,14 +236,12 @@ pub enum ShapeType {
     #[default]
     Rectangle,
     Ellipse,
-    Selection,
 }
 
 impl ShapeType {
     pub fn get_drawable(&self, bbox: &BBox) -> Drawable {
         match self {
             Self::Ellipse => Box::new(Ellipse::new(bbox)),
-            Self::Selection => Box::new(Selection::new(bbox)),
             Self::Rectangle => Box::new(Rectangle::new(bbox)),
         }
     }

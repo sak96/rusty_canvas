@@ -4,7 +4,7 @@ use super::ToolAction;
 use super::select_tool::Select;
 use crate::store::AppState;
 use crate::types::events::CanvasEvent;
-use crate::types::shapes::{BBox, Drawable, Ellipse, Rectangle, Shape, ShapeType};
+use crate::types::shapes::{BBox, Draw, Drawable, Ellipse, Rectangle, Shape, ShapeType};
 
 pub trait ShapeToolDetails {
     fn shape_type() -> ShapeType;
@@ -19,7 +19,7 @@ pub struct ShapeTool<T> {
 
 impl<T> ToolAction for ShapeTool<T>
 where
-    T: ShapeToolDetails + Default,
+    T: ShapeToolDetails + Default + Draw,
 {
     fn button_icon(&self) -> &'static str {
         ShapeToolDetails::button_icon(&T::default())
@@ -45,7 +45,8 @@ where
                 true
             }
             CanvasEvent::DragMove((start, end)) => {
-                tool_shape.replace(T::shape_type().get_drawable(&BBox::from_corner(start, end)));
+                let selection = BBox::from_corner(start, end);
+                tool_shape.replace(Box::new(T::new(&selection)));
                 app_state.set_redraw();
                 true
             }
