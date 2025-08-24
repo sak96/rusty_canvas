@@ -27,7 +27,7 @@ pub fn color_button(ColorProps { color }: &ColorProps) -> Html {
                 })
             }
         >
-            <i style={format!("color: {}", color)} class={classes!("ti", "ti-square-filled")} />
+            <i style={format!("color: {}", color)} class={classes!("ti", "ti-square")} />
         </BaseButton>
     }
 }
