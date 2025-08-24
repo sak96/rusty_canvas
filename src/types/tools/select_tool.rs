@@ -9,6 +9,7 @@ use crate::types::shapes::{BBox, Draw, Drawable, Selection};
 pub struct Select;
 
 impl Select {
+    const MARGIN: f64 = 10.0;
     fn get_selected(selection: &BBox, shapes: &Shapes) -> Vec<Id> {
         shapes
             .shapes
@@ -47,9 +48,25 @@ impl ToolAction for Select {
                 true
             }
             CanvasEvent::DragEnd((start, end)) => {
-                let selection = BBox::from_corner(start, end);
-                app_state.replace_selected(Self::get_selected(&selection, app_state.get_shapes()));
-                tool_shape.take();
+                if (start.0 - end.0).powf(2.0) + (start.1 - end.1).powf(2.0)
+                    <= Self::MARGIN.powf(2.0)
+                {
+                    app_state.replace_selected(
+                        app_state
+                            .get_shapes()
+                            .shapes
+                            .iter()
+                            .filter(|shape| shape.contains(start, Self::MARGIN))
+                            .map(|shape| shape.get_id().clone())
+                            .collect(),
+                    );
+                    tool_shape.take();
+                } else {
+                    let selection = BBox::from_corner(start, end);
+                    app_state
+                        .replace_selected(Self::get_selected(&selection, app_state.get_shapes()));
+                    tool_shape.take();
+                }
                 true
             }
             CanvasEvent::DeselectTool => {
