@@ -15,7 +15,7 @@ pub fn the_toolbar() -> Html {
             left: 50%;
             top: 0;
             transform: translate(-50%, 0);
-            box-shadow: 0px 0px .9px 0px rgba(0, 0, 0, .17), 0px 0px 3.1px 0px rgba(0, 0, 0, .08), 0px 7px 14px 0px rgba(0, 0, 0, .05)
+            box-shadow: 0px 7px 14px 0px rgb(142, 142, 142);
         "#>
         {{
             Tool::iter().map(|tool|{

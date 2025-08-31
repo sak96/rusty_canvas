@@ -14,8 +14,9 @@ pub fn the_sidebar() -> Html {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            box-shadow: 0px 0px .9px 0px rgba(0, 0, 0, .17), 0px 0px 3.1px 0px rgba(0, 0, 0, .08), 0px 7px 14px 0px rgba(0, 0, 0, .05)
+            box-shadow: 7px 0px 14px 0px rgb(142, 142, 142);
         "#>
+            // box-shadow: 0 0 0 2em #f4aab9, 0 0 0 4em #66ccff;
             <i style="margin: 1px auto;">{"Stroke"}</i>
             <div>
             {{
